@@ -3,21 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Evolve Battle Station</title>
+    <title>Evolve Landscape Max</title>
     <style>
-        /* 全局設定 */
+        /* --- 全局設定 --- */
         body {
             background-color: #121212;
             color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             height: 100vh;
-            overflow: hidden; /* 防止滾動 */
+            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        /* 畫面 1: 領袖選擇 (保持不變，簡化顯示) */
+        /* 按鈕優化 */
+        button { touch-action: manipulation; outline: none; -webkit-tap-highlight-color: transparent; }
+        .btn { border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: transform 0.1s; }
+        .btn:active { transform: scale(0.95); opacity: 0.9; }
+
+        /* --- 畫面 1: 領袖選擇 (維持不變) --- */
         #screen-select {
             display: flex;
             flex-direction: column;
@@ -25,239 +30,250 @@
             align-items: center;
             height: 100%;
             background: #1a1a1a;
-            z-index: 10;
+            z-index: 20;
+            position: absolute; width: 100%;
         }
         .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
-        .leader-opt { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #555; overflow: hidden; cursor: pointer; }
+        .leader-opt { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #555; overflow: hidden; position: relative; }
         .leader-opt.selected { border-color: #00d2ff; box-shadow: 0 0 15px #00d2ff; }
         .leader-opt img { width: 100%; height: 100%; object-fit: cover; }
-        .btn-start { margin-top: 20px; padding: 10px 30px; background: #00d2ff; border: none; font-size: 1.2rem; border-radius: 20px; cursor: pointer; }
+        .upload-placeholder { background: #444; font-size: 30px; color: #aaa; display: flex; justify-content: center; align-items: center; }
 
-        /* 畫面 2: 戰鬥介面 (核心修改區) */
+        /* --- 畫面 2: 戰鬥介面 (左右佈局) --- */
         #screen-battle {
             display: none; /* 預設隱藏 */
-            flex-direction: row; /* 左側 PP，右側 HP */
+            flex-direction: row; /* 關鍵：左右排列 */
             height: 100%;
             width: 100%;
         }
 
-        /* --- 左側：PP 控制區 (直式) --- */
+        /* === 左側：PP 控制區 (30% 寬度) === */
         .left-panel-pp {
-            width: 25%; /* 佔寬度 25% */
-            background-color: #1e1e1e;
+            width: 30%;
+            background-color: #1a1a1a;
             border-right: 2px solid #333;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
             padding: 10px;
             box-sizing: border-box;
+            justify-content: space-around;
         }
 
-        .pp-display-box {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .pp-label { font-size: 0.9rem; color: #888; letter-spacing: 2px; }
-        .pp-value { font-size: 3.5rem; font-weight: bold; color: #4eff4e; text-shadow: 0 0 10px rgba(78, 255, 78, 0.3); }
-        .pp-max { font-size: 1.2rem; color: #aaa; }
-
-        .pp-controls { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-        .btn-pp { background: #333; color: white; border: 1px solid #555; padding: 12px; font-size: 1.2rem; border-radius: 8px; cursor: pointer; }
-        .btn-pp:active { background: #555; }
+        .pp-display-box { text-align: center; margin-bottom: 10px; }
+        .pp-label { font-size: 0.8rem; color: #888; letter-spacing: 2px; }
+        .pp-value { font-size: 3.5rem; font-weight: bold; color: #4eff4e; line-height: 1.1; }
+        .pp-max-text { color: #aaa; font-size: 1rem; }
         
-        /* 回合開始按鈕 (重要功能) */
+        /* PP 按鈕群 */
+        .pp-btn-group { display: flex; gap: 5px; margin-bottom: 8px; }
+        .btn-pp { flex: 1; background: #333; border: 1px solid #555; padding: 12px 0; font-size: 1.2rem; }
+        
+        /* 回合開始按鈕 */
         .btn-turn-start {
-            margin-top: 30px;
+            width: 100%; padding: 20px 0;
             background: linear-gradient(135deg, #0056b3, #004494);
-            color: white;
-            border: none;
-            padding: 20px 10px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border-radius: 12px;
-            width: 100%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            cursor: pointer;
+            font-size: 1.1rem; border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
         }
-        .btn-turn-start:active { transform: scale(0.98); }
 
-        /* --- 右側：HP 顯示區 (上下分割) --- */
+        /* === 右側：HP 顯示區 (70% 寬度) === */
         .right-panel-hp {
-            width: 75%; /* 佔寬度 75% */
+            width: 70%;
             display: flex;
-            flex-direction: column;
+            flex-direction: column; /* 右側內部上下排列 */
         }
 
-        .player-section {
-            flex: 1; /* 上下各佔 50% */
+        /* 右上：對手區 (40%) */
+        .section-enemy {
+            height: 40%;
+            background-color: #251818;
+            border-bottom: 2px solid #444;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            border-bottom: 1px solid #333;
+            justify-content: center;
             position: relative;
         }
-        
-        /* 區分背景色 */
-        .enemy-area { background-color: #251818; } /* 對手紅色調 */
-        .self-area { background-color: #181d25; border-bottom: none; } /* 自己藍色調 */
 
-        /* 領袖頭像 */
-        .leader-avatar {
-            width: 100px;
-            height: 100px;
+        /* 右下：玩家區 (60%) - 空間留給大圖 */
+        .section-player {
+            height: 60%;
+            background-color: #181d25;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* 通用 HP 控制組 */
+        .hp-control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 5; /* 確保按鈕在圖片上層 */
+        }
+        
+        /* 玩家大圖樣式 (160px) */
+        .avatar-large {
+            width: 160px;
+            height: 160px;
             border-radius: 50%;
             border: 4px solid #fff;
             object-fit: cover;
             background: #000;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
         }
 
-        /* HP 數值與按鈕 */
-        .hp-control-group {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        .hp-value {
+        /* 玩家 HP 文字 (疊加在圖片下方或旁邊) */
+        .hp-text-large {
             font-size: 4rem;
-            font-weight: bold;
-            width: 100px;
-            text-align: center;
-        }
-        .btn-hp {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: none;
-            font-size: 2rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-        .btn-minus { background-color: #b71c1c; color: white; }
-        .btn-plus { background-color: #1b5e20; color: white; }
-
-        /* 旋轉按鈕 (針對面對面打牌) */
-        .rotate-btn {
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: transparent;
-            border: 1px solid #555;
-            color: #888;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 0.8rem;
+            bottom: -10px; right: -10px; /* 稍微重疊 */
+        }
+        
+        /* 對手小圖樣式 */
+        .avatar-small { width: 70px; height: 70px; border-radius: 50%; border: 2px solid #ccc; object-fit: cover; }
+        .hp-text-small { font-size: 3rem; font-weight: bold; min-width: 60px; text-align: center; }
+
+        /* HP 按鈕 */
+        .btn-hp { width: 60px; height: 60px; border-radius: 50%; font-size: 2rem; background: #444; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .btn-minus { background: #b71c1c; }
+        .btn-plus { background: #1b5e20; }
+
+        /* 玩家顯示容器 (置中) */
+        .player-display-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
         }
 
-        /* 手機直向時的提示 */
+        /* === 骰子功能 (位於右下角) === */
+        .dice-container {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            z-index: 10;
+        }
+        .dice-btn {
+            width: 50px; height: 50px;
+            background: white; color: black;
+            border-radius: 10px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem; font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            cursor: pointer; border: 2px solid #999;
+        }
+
+        /* 旋轉按鈕 */
+        .btn-rotate { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); padding: 5px 10px; font-size: 0.8rem; border: 1px solid #666; }
+
+        /* 橫向模式提示 (選用) */
         @media (orientation: portrait) {
-            .orientation-warning { display: flex; }
+            .landscape-hint {
+                position: fixed; top:0; left:0; width:100%; height:100%;
+                background: rgba(0,0,0,0.85); z-index: 100;
+                display: flex; justify-content: center; align-items: center; color: white;
+                text-align: center; pointer-events: none; opacity: 0; animation: fadeOut 3s forwards;
+            }
         }
-        .orientation-warning {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 999;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-        }
+        @keyframes fadeOut { 0% {opacity: 1;} 80% {opacity: 1;} 100% {opacity: 0; pointer-events: none;} }
+
     </style>
 </head>
 <body>
 
-<!-- 直向使用時的警告 (建議橫向) -->
-<div class="orientation-warning">
-    <div>
-        <h1>建議使用橫向模式</h1>
-        <p>為了獲得最佳體驗（左側PP，右側HP），<br>請旋轉您的手機。</p>
-        <button class="btn-start" onclick="this.parentElement.parentElement.style.display='none'">強制使用</button>
-    </div>
+<!-- 橫向提示 (只顯示3秒) -->
+<div class="landscape-hint">
+    建議將手機<br>轉為橫向使用
 </div>
 
-<!-- SCREEN 1: 選擇領袖 -->
+<!-- 畫面 1: 領袖選擇 -->
 <div id="screen-select">
-    <h2 style="margin-bottom: 30px;">選擇您的領袖 (Player)</h2>
+    <h2 style="color: #00d2ff; margin-bottom: 20px;">SELECT LEADER</h2>
     <div class="grid">
-        <!-- 預設選項 -->
-        <div class="leader-opt" onclick="selectLeader(this, 'https://via.placeholder.com/150/003366/FFFFFF?text=Elf')"><img src="https://via.placeholder.com/150/2E7D32/FFFFFF?text=Elf"></div>
-        <div class="leader-opt" onclick="selectLeader(this, 'https://via.placeholder.com/150/FBC02D/000000?text=Royal')"><img src="https://via.placeholder.com/150/FBC02D/000000?text=Royal"></div>
-        <div class="leader-opt" onclick="selectLeader(this, 'https://via.placeholder.com/150/1565C0/FFFFFF?text=Witch')"><img src="https://via.placeholder.com/150/1565C0/FFFFFF?text=Witch"></div>
-        <div class="leader-opt" onclick="selectLeader(this, 'https://via.placeholder.com/150/424242/FFFFFF?text=Drag')"><img src="https://via.placeholder.com/150/424242/FFFFFF?text=Drag"></div>
+        <div class="leader-opt" onclick="selectLeader(this, 'https://via.placeholder.com/200/2E7D32/FFFFFF?text=Elf')"><img src="https://via.placeholder.com/200/2E7D32/FFFFFF?text=Elf"></div>
+        <div class="leader-opt" onclick="selectLeader(this, 'https://via.placeholder.com/200/FBC02D/000000?text=Royal')"><img src="https://via.placeholder.com/200/FBC02D/000000?text=Royal"></div>
+        <div class="leader-opt" onclick="selectLeader(this, 'https://via.placeholder.com/200/1565C0/FFFFFF?text=Witch')"><img src="https://via.placeholder.com/200/1565C0/FFFFFF?text=Witch"></div>
+        <div class="leader-opt" onclick="selectLeader(this, 'https://via.placeholder.com/200/424242/FFFFFF?text=Drag')"><img src="https://via.placeholder.com/200/424242/FFFFFF?text=Drag"></div>
         
-        <!-- 上傳按鈕 -->
-        <label class="leader-opt" style="background: #444; display: flex; justify-content: center; align-items: center;">
-            <span style="font-size: 30px;">+</span>
-            <input type="file" accept="image/*" style="display: none;" onchange="handleUpload(this)">
+        <label class="leader-opt upload-placeholder" onclick="triggerUpload(this)">
+            +
+            <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleUpload(this)">
         </label>
     </div>
-    <button class="btn-start" onclick="startGame()">BATTLE START</button>
+    <button class="btn" style="background: #00d2ff; color: #000; padding: 15px 40px; margin-top: 20px; font-size: 1.2rem; border-radius: 30px;" onclick="startGame()">BATTLE START</button>
 </div>
 
-<!-- SCREEN 2: 戰鬥介面 (Flex Layout) -->
+<!-- 畫面 2: 戰鬥介面 (左右佈局) -->
 <div id="screen-battle">
     
-    <!-- 左側：PP 控制 (Vertical) -->
+    <!-- === 左側：PP 控制 === -->
     <div class="left-panel-pp">
         <div class="pp-display-box">
-            <div class="pp-label">PLAY POINT</div>
+            <div class="pp-label">PLAY POINTS</div>
             <div class="pp-value" id="currentPP">0</div>
-            <div class="pp-max">MAX: <span id="maxPP">0</span></div>
+            <div class="pp-max-text">MAX: <span id="maxPP">0</span></div>
         </div>
-        
-        <div class="pp-controls">
-            <div style="display: flex; gap: 5px;">
-                <button class="btn-pp" style="flex:1" onclick="modPP(-1)">-1</button>
-                <button class="btn-pp" style="flex:1" onclick="modPP(1)">+1</button>
+
+        <div>
+            <div class="pp-label" style="text-align: center; margin-bottom: 5px;">PP Control</div>
+            <div class="pp-btn-group">
+                <button class="btn btn-pp" onclick="modPP(-1)">-1</button>
+                <button class="btn btn-pp" onclick="modPP(1)">+1</button>
             </div>
-            <div class="pp-label" style="text-align: center; margin-top: 10px;">MAX PP</div>
-            <div style="display: flex; gap: 5px;">
-                <button class="btn-pp" style="flex:1" onclick="modMaxPP(-1)">-</button>
-                <button class="btn-pp" style="flex:1" onclick="modMaxPP(1)">+</button>
+            <div class="pp-btn-group">
+                <button class="btn btn-pp" style="font-size: 1rem; color: #aaa;" onclick="modMaxPP(-1)">Max-</button>
+                <button class="btn btn-pp" style="font-size: 1rem; color: #aaa;" onclick="modMaxPP(1)">Max+</button>
             </div>
         </div>
 
-        <button class="btn-turn-start" onclick="startTurn()">
-            回合開始<br><span style="font-size: 0.8rem; font-weight: normal;">TURN START</span>
+        <button class="btn btn-turn-start" onclick="startTurn()">
+            回合開始<br><span style="font-size: 0.9rem; font-weight: normal;">TURN START</span>
         </button>
         
-        <div style="margin-top: auto; color: #666; font-size: 0.8rem;">
+        <div style="text-align: center; color: #666; font-size: 0.8rem;">
             Turn: <span id="turnCount">1</span>
         </div>
     </div>
 
-    <!-- 右側：HP 顯示 (Top & Bottom) -->
+    <!-- === 右側：雙方生命值 === -->
     <div class="right-panel-hp">
         
-        <!-- 上半部：對手 (Enemy) -->
-        <div class="player-section enemy-area" id="enemySection">
-            <button class="rotate-btn" onclick="rotateEnemy()">↻ 旋轉視角</button>
-            <!-- 對手圖片 (預設) -->
-            <img src="https://via.placeholder.com/150/000000/FFFFFF?text=Enemy" class="leader-avatar">
-            
+        <!-- 右上：對手 -->
+        <div class="section-enemy" id="enemySection">
+            <button class="btn btn-rotate" onclick="rotateEnemy()">↻</button>
             <div class="hp-control-group">
-                <button class="btn-hp btn-minus" onclick="modHP('enemy', -1)">-</button>
-                <div class="hp-value" id="enemyHP">20</div>
-                <button class="btn-hp btn-plus" onclick="modHP('enemy', 1)">+</button>
+                <button class="btn btn-hp btn-minus" onclick="modHP('enemy', -1)" style="width: 50px; height: 50px;">-</button>
+                <div style="text-align: center;">
+                    <img src="https://via.placeholder.com/150/333/FFF?text=Enemy" class="avatar-small">
+                    <div class="hp-text-small" id="enemyHP">20</div>
+                </div>
+                <button class="btn btn-hp btn-plus" onclick="modHP('enemy', 1)" style="width: 50px; height: 50px;">+</button>
             </div>
         </div>
 
-        <!-- 下半部：自己 (Self) -->
-        <div class="player-section self-area">
-            <!-- 自己的圖片 (動態載入) -->
-            <img id="myAvatar" src="" class="leader-avatar">
-            
+        <!-- 右下：玩家 (大圖 + 骰子) -->
+        <div class="section-player">
             <div class="hp-control-group">
-                <button class="btn-hp btn-minus" onclick="modHP('player', -1)">-</button>
-                <div class="hp-value" id="playerHP">20</div>
-                <button class="btn-hp btn-plus" onclick="modHP('player', 1)">+</button>
+                <button class="btn btn-hp btn-minus" onclick="modHP('player', -1)">-</button>
+                
+                <!-- 大主戰者圖片顯示區 -->
+                <div class="player-display-container">
+                    <!-- 大圖片 (160px) -->
+                    <img id="myAvatar" src="" class="avatar-large">
+                    <!-- HP 文字 (疊加) -->
+                    <div class="hp-text-large" id="playerHP">20</div>
+                </div>
+                
+                <button class="btn btn-hp btn-plus" onclick="modHP('player', 1)">+</button>
+            </div>
+
+            <!-- 骰子功能 (位於右下角) -->
+            <div class="dice-container" onclick="rollDice()">
+                <div class="dice-btn" id="diceResult">🎲</div>
             </div>
         </div>
 
@@ -265,50 +281,58 @@
 </div>
 
 <script>
-    // 遊戲數據
+    // 遊戲核心數據
     let state = {
-        playerHP: 20,
-        enemyHP: 20,
-        currentPP: 0,
-        maxPP: 0,
-        turn: 1,
-        imgSrc: '' // 存儲使用者選擇的圖片
+        playerHP: 20, enemyHP: 20,
+        currentPP: 0, maxPP: 0,
+        turn: 1, imgSrc: ''
     };
 
-    // 1. 選擇圖片邏輯
+    // 1. 骰子邏輯 (Source [2])
+    function rollDice() {
+        const result = Math.floor(Math.random() * 6) + 1;
+        const diceEl = document.getElementById('diceResult');
+        diceEl.style.transform = "rotate(360deg) scale(0.8)";
+        setTimeout(() => {
+            diceEl.innerText = result;
+            diceEl.style.transform = "rotate(0deg) scale(1)";
+        }, 200);
+    }
+
+    // 2. 圖片處理 (Source [3])
     function selectLeader(el, src) {
         document.querySelectorAll('.leader-opt').forEach(d => d.classList.remove('selected'));
         el.classList.add('selected');
         state.imgSrc = src;
     }
+    
+    function triggerUpload(el) {
+        document.querySelectorAll('.leader-opt').forEach(d => d.classList.remove('selected'));
+        el.classList.add('selected');
+    }
 
-    // 2. 上傳圖片邏輯
     function handleUpload(input) {
         if (input.files && input.files) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 state.imgSrc = e.target.result;
-                // 視覺回饋：選中上傳鈕
-                document.querySelectorAll('.leader-opt').forEach(d => d.classList.remove('selected'));
-                input.parentElement.classList.add('selected');
-                alert("圖片已讀取");
-            };
+                input.parentElement.innerHTML = `<img src="${e.target.result}">`;
+            }
             reader.readAsDataURL(input.files);
         }
     }
 
     // 3. 開始遊戲
     function startGame() {
-        if (!state.imgSrc) { alert("請先選擇一張領袖圖片"); return; }
-        
+        if (!state.imgSrc) { alert("請選擇或上傳一張圖片"); return; }
         document.getElementById('myAvatar').src = state.imgSrc;
         document.getElementById('screen-select').style.display = 'none';
-        document.getElementById('screen-battle').style.display = 'flex'; // 重要：設為 flex 佈局
+        document.getElementById('screen-battle').style.display = 'flex'; // 啟動 flex 左右佈局
     }
 
-    // 4. HP 控制邏輯 (支援兩人)
-    function modHP(target, val) {
-        if (target === 'player') {
+    // 4. HP 邏輯 (Source [1])
+    function modHP(who, val) {
+        if (who === 'player') {
             state.playerHP += val;
             document.getElementById('playerHP').innerText = state.playerHP;
         } else {
@@ -317,50 +341,38 @@
         }
     }
 
-    // 5. PP 控制邏輯
+    // 5. PP 邏輯
     function modPP(val) {
         const next = state.currentPP + val;
         if (next >= 0 && next <= state.maxPP) {
-            state.currentPP = next;
-            updatePPUI();
+            state.currentPP = next; renderPP();
         }
     }
-
     function modMaxPP(val) {
         const next = state.maxPP + val;
         if (next >= 0 && next <= 10) {
-            state.maxPP = next;
-            updatePPUI();
+            state.maxPP = next; renderPP();
         }
     }
-
-    // 6. 回合開始邏輯 (參照官方規則)
-    // 官方APP邏輯：Max PP +1 (上限10), Current PP 補滿, Turn +1
-    function startTurn() {
-        if (state.maxPP < 10) {
-            state.maxPP += 1;
-        }
-        state.currentPP = state.maxPP; // 補滿
-        state.turn += 1;
-        
-        updatePPUI();
-        document.getElementById('turnCount').innerText = state.turn;
-    }
-
-    function updatePPUI() {
+    function renderPP() {
         document.getElementById('currentPP').innerText = state.currentPP;
         document.getElementById('maxPP').innerText = state.maxPP;
     }
 
-    // 7. 額外功能：旋轉對手視角 (方便面對面打牌)
+    // 6. 回合開始邏輯 (Source [1])
+    function startTurn() {
+        if (state.maxPP < 10) state.maxPP++;
+        state.currentPP = state.maxPP;
+        state.turn++;
+        renderPP();
+        document.getElementById('turnCount').innerText = state.turn;
+    }
+
+    // 7. 旋轉對手
     let isRotated = false;
     function rotateEnemy() {
         const section = document.getElementById('enemySection');
-        if (!isRotated) {
-            section.style.transform = "rotate(180deg)";
-        } else {
-            section.style.transform = "none";
-        }
+        section.style.transform = isRotated ? "none" : "rotate(180deg)";
         isRotated = !isRotated;
     }
 </script>
