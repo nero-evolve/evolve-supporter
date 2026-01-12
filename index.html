@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Evolve Tracker - Centered Logo Edition</title>
+    <title>Evolve Tracker - Wrap Counters Edition</title>
     <style>
-        /* --- 全局設定 (完全鎖定) --- */
+        /* --- 全局設定 --- */
         body { background-color: #121212; color: white; font-family: -apple-system, sans-serif; margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
         button, select { touch-action: manipulation; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; }
         .btn { border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: transform 0.05s; }
@@ -13,12 +13,9 @@
 
         /* --- 畫面 1: Setup --- */
         #screen-select { display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; height: 100dvh; width: 100%; background: #1a1a1a; z-index: 200; position: absolute; padding: 5px 0; box-sizing: border-box; }
-        
-        /* Logo 容器與置中修正 */
         .setup-logo-container { width: 100%; max-height: 140px; display: flex; justify-content: center; align-items: center; margin-bottom: 2px; }
         .setup-logo-container a { display: flex; justify-content: center; width: 100%; text-decoration: none; }
-        .setup-logo-container img { max-width: 100%; max-height: 250px; object-fit: contain; cursor: pointer; }
-
+        .setup-logo-container img { max-width: 50%; max-height: 250px; object-fit: contain; cursor: pointer; }
         .order-selector { display: flex; gap: 8px; background: #333; padding: 3px; border-radius: 6px; }
         .order-opt { padding: 6px 30px; cursor: pointer; font-weight: bold; color: #aaa; font-size: 0.85rem; border-radius: 4px; }
         .order-opt.active { background: #00d2ff; color: #000; }
@@ -32,21 +29,15 @@
         .file-indicator { position: absolute; bottom: 0; left: 0; height: 3px; width: 0%; background: #4eff4e; transition: width 0.3s; z-index: 1; }
         .start-btn { background:#00d2ff; color:#000; padding: 10px 60px; border-radius:25px; font-size:1.2rem; font-weight:bold; }
 
-        /* --- 畫面 2: Battle (完全鎖定) --- */
+        /* --- 畫面 2: Battle --- */
         #screen-battle { display: none; flex-direction: row; height: 100%; width: 100%; position: relative; }
         .top-toolbar { position: absolute; top: 10px; left: 8px; z-index: 100; display: flex; flex-direction: column; gap: 8px; align-items: center; }
         .btn-reset { background: #b71c1c; padding: 10px 0; font-size: 0.85rem; border-radius: 6px; width: 85px; }
         .dice-sidebar-btn { width: 55px; height: 55px; background: white; color: black; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 2rem; box-shadow: 0 4px 10px #000; cursor: pointer; }
         .btn-jail-sidebar { width: 85px; padding: 8px 0; background: #333; border: 1px solid #555; color: #aaa; font-size: 0.9rem; border-radius: 8px; }
         .btn-jail-sidebar.on { background: #b71c1c; color: white; border-color: #ff5252; box-shadow: 0 0 8px #b71c1c; }
-        .sidebar-counter-group { display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 8px 5px; border-radius: 12px; border: 1px solid #444; }
-        .sep-gem { width: 32px; height: 32px; background: #222; border: 1px solid #444; transform: rotate(45deg); display: flex; justify-content: center; align-items: center; cursor: pointer; }
-        .sep-gem span { transform: rotate(-45deg); font-size: 0.6rem; font-weight: bold; color: #555; }
-        .sep-gem.active { background: #e040fb; border-color: #f3adff; box-shadow: 0 0 10px #e040fb; }
-        .sep-gem.active span { color: white; }
-        .ep-container-vertical { display: flex; flex-direction: column; gap: 8px; }
-        .ep-gem { width: 22px; height: 22px; background: #333; border: 1px solid #555; transform: rotate(45deg); opacity: 0.3; cursor: pointer; }
-        .ep-gem.active { background: #ffd700; border-color: #fff; opacity: 1; box-shadow: 0 0 8px #ffd700; }
+
+        /* PP 面板 */
         .left-panel-pp { width: 28%; background-color: #111; border-right: 2px solid #333; display: flex; flex-direction: column; padding: 10px 8px; box-sizing: border-box; justify-content: flex-end; }
         .pp-gauge-container { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; margin-bottom: 10px; }
         .pp-header { font-size: 0.85rem; color: #aaa; text-align: center; font-weight: bold; margin-bottom: 4px; }
@@ -59,6 +50,8 @@
         .pp-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .btn-manual { background: #333; border: 1px solid #555; padding: 14px 0; font-size: 1rem; }
         .btn-turn-start { width: 100%; padding: 18px 0; background: linear-gradient(135deg, #0056b3, #004494); font-size: 1.2rem; border-radius: 10px; margin-top: 8px; }
+
+        /* 右側主戰者區域 */
         .right-panel-hp { width: 72%; display: flex; flex-direction: column; }
         .battle-section { height: 43%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; position: relative; border-bottom: 1px solid #333; box-sizing: border-box; padding-top: 5px; }
         .section-enemy { background-color: #1e1515; }
@@ -72,21 +65,37 @@
         .leader-landscape-frame img { width: 100%; height: 100%; object-fit: cover; }
         .leader-landscape-frame.burning { border-color: #ff9800; box-shadow: 0 0 20px #ff5722; animation: burnPulse 1.5s infinite alternate; }
         @keyframes burnPulse { 0% { opacity: 0.85; } 100% { opacity: 1; } }
-        .section-footer { height: 14%; background-color: #111; display: flex; align-items: center; padding: 0 15px; gap: 10px; overflow-x: auto; }
-        .counter-box { background: #222; border: 1px solid #444; border-radius: 6px; padding: 6px 10px; text-align: center; min-width: 55px; }
-        .counter-label { font-size: 0.6rem; color: #aaa; }
-        .counter-val { font-size: 1.2rem; font-weight: bold; }
-        .btn-toggle-mini { padding: 5px 12px; font-size: 0.8rem; background: #333; border-radius: 4px; border: 1px solid #555; color: white; }
+
+        /* 底部區域：橫向並排計數器與 SEP/EP 置右 */
+        .section-footer { height: 14%; background-color: #111; display: flex; align-items: center; padding: 0 10px; gap: 10px; overflow: hidden; border-top: 1px solid #222; }
+        
+        /* 計數器區：橫向並排且可換行與捲動 */
+        .class-counters { display: flex; flex-wrap: wrap; align-content: center; gap: 8px; overflow-y: auto; height: 100%; flex-grow: 1; scrollbar-width: none; -ms-overflow-style: none; }
+        .class-counters::-webkit-scrollbar { display: none; }
+        
+        .counter-box { background: #222; border: 1px solid #444; border-radius: 6px; padding: 5px 8px; text-align: center; min-width: 60px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+        .counter-label { font-size: 0.55rem; color: #aaa; margin-bottom: 2px; }
+        .counter-val { font-size: 1rem; font-weight: bold; }
+        .btn-tiny { width: 22px; height: 22px; background: #444; border-radius: 4px; border: none; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+        .btn-toggle-mini { padding: 4px 10px; font-size: 0.7rem; background: #333; border-radius: 4px; border: 1px solid #555; color: white; }
         .btn-toggle-mini.on { background: #b71c1c; }
+
+        /* SEP/EP 置右橫式 */
+        .footer-ep-sep-group { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 12px; border: 1px solid #333; flex-shrink: 0; margin-left: auto; }
+        .sep-gem { width: 30px; height: 30px; background: #222; border: 1px solid #444; transform: rotate(45deg); display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .sep-gem span { transform: rotate(-45deg); font-size: 0.55rem; font-weight: bold; color: #555; }
+        .sep-gem.active { background: #e040fb; border-color: #f3adff; box-shadow: 0 0 10px #e040fb; }
+        .sep-gem.active span { color: white; }
+        .ep-container-horizontal { display: flex; gap: 6px; }
+        .ep-gem { width: 20px; height: 20px; background: #333; border: 1px solid #555; transform: rotate(45deg); opacity: 0.3; cursor: pointer; }
+        .ep-gem.active { background: #ffd700; border-color: #fff; opacity: 1; box-shadow: 0 0 8px #ffd700; }
     </style>
 </head>
 <body>
 
 <div id="screen-select">
     <div class="setup-logo-container">
-        <a href="https://pawa20240408.blogspot.com/" target="_blank">
-            <img src="image/logo.png" alt="Logo">
-        </a>
+        <a href="https://pawa20240408.blogspot.com/" target="_blank"><img src="image/logo.png" alt="Logo"></a>
     </div>
     <div class="order-selector">
         <div class="order-opt active" id="optFirst" onclick="sfx('tick'); setOrder('first')">先攻</div>
@@ -94,16 +103,8 @@
     </div>
     <div class="grid" id="leaderGrid"></div>
     <div class="upload-section">
-        <label class="upload-btn-rect" onclick="sfx('click')">
-            <span class="upload-text">自訂主戰者圖片檔</span>
-            <div class="file-indicator" id="imageIndicator"></div>
-            <input type="file" accept="image/*" style="display: none;" onchange="handleImageUpload(this)">
-        </label>
-        <label class="upload-btn-rect" onclick="sfx('click')">
-            <span class="upload-text">自訂主戰者音樂檔</span>
-            <div class="file-indicator" id="audioIndicator"></div>
-            <input type="file" accept="audio/*" style="display: none;" onchange="handleAudioUpload(this)">
-        </label>
+        <label class="upload-btn-rect" onclick="sfx('click')"><span class="upload-text">自訂主戰者圖片檔</span><div class="file-indicator" id="imageIndicator"></div><input type="file" accept="image/*" style="display: none;" onchange="handleImageUpload(this)"></label>
+        <label class="upload-btn-rect" onclick="sfx('click')"><span class="upload-text">自訂主戰者音樂檔</span><div class="file-indicator" id="audioIndicator"></div><input type="file" accept="audio/*" style="display: none;" onchange="handleAudioUpload(this)"></label>
     </div>
     <button class="btn start-btn" onclick="sfx('confirm'); startGame()">BATTLE START</button>
 </div>
@@ -113,12 +114,6 @@
         <button class="btn btn-reset" onclick="sfx('click'); resetGame()">RESET</button>
         <div class="dice-sidebar-btn" id="diceResult" onclick="rollDice()">🎲</div>
         <button id="jailBtnSidebar" class="btn btn-jail-sidebar" onclick="toggleJail()">坐牢中 OFF</button>
-        <div class="sidebar-counter-group">
-            <div class="sep-gem" id="sepGem" onclick="toggleSEPGem()"><span>SEP</span></div>
-            <div class="ep-container-vertical" id="epBox">
-                <div class="ep-gem" onclick="toggleEP(this)"></div><div class="ep-gem" onclick="toggleEP(this)"></div><div class="ep-gem" onclick="toggleEP(this)"></div>
-            </div>
-        </div>
     </div>
 
     <div class="left-panel-pp">
@@ -153,7 +148,16 @@
             </div>
             <div class="leader-landscape-frame" id="playerFrame" onclick="playUserVoice()"><img id="myAvatar" src=""></div>
         </div>
-        <div class="section-footer"><div class="class-counters" id="classCounters"></div></div>
+        
+        <div class="section-footer">
+            <div class="class-counters" id="classCounters"></div>
+            <div class="footer-ep-sep-group">
+                <div class="sep-gem" id="sepGem" onclick="toggleSEPGem()"><span>SEP</span></div>
+                <div class="ep-container-horizontal" id="epBox">
+                    <div class="ep-gem" onclick="toggleEP(this)"></div><div class="ep-gem" onclick="toggleEP(this)"></div><div class="ep-gem" onclick="toggleEP(this)"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -212,9 +216,6 @@
         sfx('confirm');
     }
 
-    function handleImageUpload(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { state.uploadedImgSrc = e.target.result; state.imgSrc = e.target.result; document.getElementById('imageIndicator').style.width = "100%"; sfx('confirm'); }; reader.readAsDataURL(input.files[0]); } }
-    function handleAudioUpload(input) { if (input.files && input.files[0]) { uploadedAudio.src = URL.createObjectURL(input.files[0]); uploadedAudio.load(); hasUploadedAudio = true; document.getElementById('audioIndicator').style.width = "100%"; sfx('confirm'); } }
-
     function startGame() {
         if (!state.imgSrc) { alert("請選擇職業"); return; }
         document.getElementById('myAvatar').src = state.imgSrc;
@@ -259,21 +260,33 @@
     function startTurn() { state.turn++; if (state.maxPP < 10) state.maxPP++; state.currentPP = state.maxPP; if (state.playerClass === 'elf') state.combo = 0; if (state.playerClass === 'nightmare') state.isCrimson = false; checkSEPAutoLight(); renderPP(); renderClassUI(); }
     function updateEPUi() { const eps = document.getElementById('epBox').children; const count = state.isFirstPlayer ? 0 : 3; for(let i=0; i<3; i++) { eps[i].className = (i < count) ? 'ep-gem active' : 'ep-gem'; } }
     function modHP(who, val) { state[who+'HP'] += val; document.getElementById(who+'HP').innerText = state[who+'HP']; sfx('tick'); }
+    
     function renderClassUI() {
         const container = document.getElementById('classCounters'); container.innerHTML = '';
-        const addC = (lbl, key) => { let div = document.createElement('div'); div.className='counter-box'; div.innerHTML = `<div class="counter-label">${lbl}</div><div style="display:flex;align-items:center;gap:3px"><button class="btn btn-tiny" style="width:22px;height:22px;background:#444" onclick="modCounter('${key}',-1)">-</button><span class="counter-val" id="v-${key}">${state[key]}</span><button class="btn btn-tiny" style="width:22px;height:22px;background:#444" onclick="modCounter('${key}',1)">+</button></div>`; container.appendChild(div); };
-        const addT = (lbl, key) => { let div = document.createElement('div'); div.className='counter-box'; div.innerHTML = `<div class="counter-label">${lbl}</div><button class="btn-toggle-mini ${state[key]?'on':''}" onclick="togState('${key}')">${state[key]?'ON':'OFF'}</button>`; container.appendChild(div); };
+        const addC = (lbl, key) => { 
+            let div = document.createElement('div'); div.className='counter-box'; 
+            div.innerHTML = `<div class="counter-label">${lbl}</div><div style="display:flex;align-items:center;gap:4px"><button class="btn btn-tiny" onclick="modCounter('${key}',-1)">-</button><span class="counter-val" id="v-${key}">${state[key]}</span><button class="btn btn-tiny" onclick="modCounter('${key}',1)">+</button></div>`; 
+            container.appendChild(div); 
+        };
+        const addT = (lbl, key) => { 
+            let div = document.createElement('div'); div.className='counter-box'; 
+            div.innerHTML = `<div class="counter-label">${lbl}</div><button class="btn-toggle-mini ${state[key]?'on':''}" onclick="togState('${key}')">${state[key]?'ON':'OFF'}</button>`; 
+            container.appendChild(div); 
+        };
         if(state.playerClass==='elf') addC('連擊','combo');
         if(['royal','witch','nightmare'].includes(state.playerClass)) addC('墓場','cemetery');
         if(state.playerClass==='witch') addC('增幅','spellboost');
         if(state.playerClass==='nightmare') { addT('真紅','isCrimson'); addC('充能','necroCharge'); }
     }
+
     window.modCounter = (k, v) => { state[k]=Math.max(0, state[k]+v); document.getElementById('v-'+k).innerText=state[k]; sfx('tick'); };
     window.togState = (k) => { state[k]=!state[k]; sfx('confirm'); renderClassUI(); };
     function rollDice() { const d = document.getElementById('diceResult'); sfx('confirm'); let count = 0; let inv = setInterval(() => { d.innerText = Math.floor(Math.random()*6)+1; if(count++ > 6) { d.innerText = Math.floor(Math.random()*6)+1; clearInterval(inv); } }, 50); }
     function rotateEnemy() { isRotated = !isRotated; document.getElementById('enemySection').style.transform = isRotated ? "rotate(180deg)" : "none"; }
     let isRotated = false;
     function resetGame() { if(confirm("確定重置？")) location.reload(); }
+    function handleImageUpload(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { state.uploadedImgSrc = e.target.result; state.imgSrc = e.target.result; document.getElementById('imageIndicator').style.width = "100%"; sfx('confirm'); }; reader.readAsDataURL(input.files[0]); } }
+    function handleAudioUpload(input) { if (input.files && input.files[0]) { uploadedAudio.src = URL.createObjectURL(input.files[0]); uploadedAudio.load(); hasUploadedAudio = true; document.getElementById('audioIndicator').style.width = "100%"; sfx('confirm'); } }
 </script>
 </body>
 </html>
