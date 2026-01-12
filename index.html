@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Evolve Tracker - Layout Optimization</title>
+    <title>Evolve Tracker - Perfect PP Flow</title>
     <style>
         /* --- 全局設定 --- */
         body { background-color: #121212; color: white; font-family: -apple-system, sans-serif; margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
@@ -11,7 +11,7 @@
         .btn { border: none; color: white; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: transform 0.05s; }
         .btn:active { transform: scale(0.95); opacity: 0.9; }
 
-        /* --- Setup 畫面 (功能完整保留) --- */
+        /* --- Setup 畫面 --- */
         #screen-select { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; background: #1a1a1a; z-index: 200; position: absolute; width: 100%; }
         .order-selector { display: flex; gap: 15px; margin-bottom: 15px; background: #333; padding: 5px; border-radius: 30px; }
         .order-opt { padding: 8px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; color: #aaa; }
@@ -20,52 +20,47 @@
         .leader-opt { width: 75px; height: 75px; border-radius: 50%; border: 3px solid #555; overflow: hidden; position: relative; background-size: cover; background-position: center; }
         .leader-opt.selected { border-color: #00d2ff; }
         .class-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.6); font-size: 0.6rem; text-align: center; }
-        
-        .upload-section { margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
-        .upload-btn-rect { width: 220px; height: 40px; background: #333; border-radius: 20px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: 1px solid #555; position: relative; overflow: hidden; }
+        .upload-btn-rect { width: 220px; height: 40px; background: #333; border-radius: 20px; display: flex; justify-content: center; align-items: center; margin-top: 15px; border: 1px solid #555; position: relative; overflow: hidden; }
         .upload-text { font-size: 0.85rem; color: #ccc; z-index: 2; font-weight: bold; pointer-events: none; }
         .file-indicator { position: absolute; bottom: 0; left: 0; height: 4px; width: 0%; background: #4eff4e; transition: width 0.3s; }
 
         /* --- Battle 畫面 --- */
         #screen-battle { display: none; flex-direction: row; height: 100%; width: 100%; position: relative; }
-        .top-toolbar { position: absolute; top: 32px; left: 5px; z-index: 100; display: flex; flex-direction: column; gap: 4px; }
+        .top-toolbar { position: absolute; top: 15px; left: 5px; z-index: 100; display: flex; flex-direction: column; gap: 4px; }
         .btn-reset { background: #b71c1c; padding: 4px 8px; font-size: 0.65rem; border-radius: 4px; }
         .class-select-dropdown { background: #222; color: white; border: 1px solid #555; font-size: 0.7rem; width: 75px; border-radius: 4px; }
 
-        /* --- 左側 PP 面板 (放大拉長) --- */
-        .left-panel-pp { width: 28%; background-color: #111; border-right: 2px solid #333; display: flex; flex-direction: column; padding: 6px; box-sizing: border-box; justify-content: space-between; }
+        /* --- 左側 PP 面板 (核心修正) --- */
+        .left-panel-pp { width: 28%; background-color: #111; border-right: 2px solid #333; display: flex; flex-direction: column; padding: 10px 6px; box-sizing: border-box; }
         .pp-header { font-size: 0.9rem; color: #aaa; text-align: center; font-weight: bold; }
         .pp-nums { font-size: 1.4rem; color: #4eff4e; font-weight: bold; }
         .pp-nums.awakened { color: #ff9800; text-shadow: 0 0 5px #ff5722; }
         
-        .pp-gauge-container { flex-grow: 1; display: flex; flex-direction: column-reverse; justify-content: flex-start; align-items: center; gap: 3px; margin: 4px 0; }
-        .pp-gem { width: 28px; height: 28px; border-radius: 50%; background: #222; border: 1px solid #444; display: none; justify-content: center; align-items: center; font-size: 0.8rem; font-weight: bold; color: #555; }
-        .pp-gem.active { background: radial-gradient(circle at 30% 30%, #4eff4e, #008000); border-color: #ccffcc; color: #004d00; }
+        /* 關鍵：flex-start 確保從底部開始堆疊 */
+        .pp-gauge-container { flex-grow: 1; display: flex; flex-direction: column-reverse; justify-content: flex-start; align-items: center; gap: 5px; margin: 10px 0; padding-top: 40px; }
+        .pp-gem { width: 32px; height: 32px; border-radius: 50%; background: #222; border: 1px solid #444; display: none; justify-content: center; align-items: center; font-size: 0.9rem; font-weight: bold; color: #555; transition: 0.2s; flex-shrink: 0; }
+        .pp-gem.active { background: radial-gradient(circle at 30% 30%, #4eff4e, #008000); border-color: #ccffcc; color: #004d00; box-shadow: 0 0 8px #4eff4e; }
         .pp-gem.used { background: #1a1a1a; opacity: 0.4; }
-        .pp-gem.awakened { background: radial-gradient(circle at 30% 30%, #ffc107, #ff5722); }
+        .pp-gem.active.awakened { background: radial-gradient(circle at 30% 30%, #ffc107, #ff5722); border-color: #ffcc80; box-shadow: 0 0 10px #ff5722; }
 
+        .controls-wrapper { width: 100%; margin-top: auto; }
         .pp-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-        .btn-manual { background: #333; border: 1px solid #555; padding: 8px 0; font-size: 0.75rem; }
-        .btn-turn-start { width: 100%; padding: 12px 0; background: linear-gradient(135deg, #0056b3, #004494); font-size: 0.9rem; border-radius: 8px; margin-top: 4px; }
+        .btn-manual { background: #333; border: 1px solid #555; padding: 10px 0; font-size: 0.8rem; }
+        .btn-turn-start { width: 100%; padding: 12px 0; background: linear-gradient(135deg, #0056b3, #004494); font-size: 0.9rem; border-radius: 8px; margin-top: 6px; }
 
         /* --- 右側 面板分區 --- */
         .right-panel-hp { width: 72%; display: flex; flex-direction: column; }
-        
-        /* 對手區 (佔 35%) */
         .section-enemy { height: 35%; background-color: #251818; border-bottom: 1px solid #444; display: flex; align-items: center; justify-content: center; position: relative; }
-        /* 玩家區 (佔 45%) */
         .section-player { height: 45%; background-color: #181d25; display: flex; align-items: center; justify-content: center; position: relative; }
         .section-player.awakened-bg { background: radial-gradient(circle at center, #2d1a1a, #181d25); }
-        /* 計數器區 (佔 20%) */
         .section-counters { height: 20%; background-color: #111; border-top: 1px solid #444; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; position: relative; }
 
-        /* 主戰者共通樣式 */
         .avatar-container { display: flex; flex-direction: column; align-items: center; margin: 0 10px; }
         .avatar-frame { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #fff; object-fit: cover; background: #000; }
         .avatar-player.burning { border-color: #ff9800; animation: burnPulse 1.5s infinite alternate; }
         @keyframes burnPulse { 0% { box-shadow: 0 0 5px #ff5722; } 100% { box-shadow: 0 0 15px #ff9800; } }
 
-        .hp-text { font-size: 1.8rem; font-weight: 900; color: #fff; margin-top: 5px; background: rgba(0,0,0,0.6); padding: 1px 12px; border-radius: 10px; text-shadow: 0 0 4px #000; z-index: 10; }
+        .hp-text { font-size: 1.8rem; font-weight: 900; color: #fff; margin-top: 8px; background: rgba(0,0,0,0.6); padding: 1px 12px; border-radius: 10px; text-shadow: 0 0 4px #000; z-index: 10; }
         
         .btn-hp { width: 45px; height: 45px; border-radius: 50%; font-size: 1.6rem; }
         .btn-minus { background: #b71c1c; } 
@@ -82,7 +77,6 @@
         .ep-gem.has-ep { opacity: 1; background: #5a4a00; }
         .ep-gem.active { background: #ffd700; opacity: 1; }
 
-        /* 計數器樣式調整 (放在底部區) */
         .class-counters { display: flex; gap: 10px; align-items: center; overflow-x: auto; }
         .counter-box { background: rgba(255,255,255,0.05); border: 1px solid #444; border-radius: 6px; padding: 4px 8px; min-width: 60px; text-align: center; }
         .counter-label { font-size: 0.6rem; color: #aaa; margin-bottom: 2px; }
@@ -90,6 +84,7 @@
         .btn-tiny { width: 24px; height: 24px; font-size: 0.9rem; background: #333; color: white; border: 1px solid #555; }
         .btn-toggle { padding: 4px 10px; font-size: 0.7rem; border-radius: 4px; background: #333; color: #888; border: 1px solid #555; }
         .btn-toggle.on { background: #b71c1c; color: white; }
+        .btn-toggle.prison.on { background: #4a148c; border-color: #ea80fc; }
         
         .dice-btn { width: 45px; height: 45px; background: white; color: black; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; }
     </style>
