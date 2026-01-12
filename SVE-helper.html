@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVOLVE Supporter Clone</title>
+    <style>
+        /* CSS: 樣式設計 - 採用暗色系風格模擬原版 App */
+        body {
+            background-color: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 450px; /* 模擬手機寬度 */
+            padding: 20px;
+        }
+
+        /* 畫面切換控制 */
+        .screen { display: none; }
+        .active { display: block; }
+
+        /* 領袖選擇網格 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .leader-option {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #444;
+            border: 2px solid #666;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .leader-option img { width: 100%; height: 100%; object-fit: cover; }
+        .leader-option.selected { border-color: #00d2ff; box-shadow: 0 0 10px #00d2ff; }
+
+        /* 戰鬥畫面 UI */
+        .battle-header {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .main-leader-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            object-fit: cover;
+            background-color: #333;
+        }
+
+        /* 數值控制區 */
+        .control-panel {
+            background-color: #2c2c2c;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .stat-display {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .btn-group { display: flex; justify-content: space-between; gap: 10px; }
+        .btn {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            flex: 1;
+        }
+        .btn:active { background-color: #666; }
+        .btn-turn { background-color: #0056b3; width: 100%; margin-top: 10px; }
+        
+        /* 標籤文字 */
+        .label { font-size: 0.9rem; color: #aaa; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- SCREEN 1: 選擇領袖 (取代相機/NFC功能) -->
+    <div id="screen-select" class="screen active">
+        <h2>選擇您的領袖</h2>
+        <div class="grid" id="leaderGrid">
+            <!-- 預設選項 -->
+            <div class="leader-option" onclick="selectLeader('https://via.placeholder.com/150/FF0000/FFFFFF?text=Elf')"><img src="https://via.placeholder.com/150/FF0000/FFFFFF?text=Elf"></div>
+            <div class="leader-option" onclick="selectLeader('https://via.placeholder.com/150/FFFF00/000000?text=Royal')"><img src="https://via.placeholder.com/150/FFFF00/000000?text=Royal"></div>
+            <div class="leader-option" onclick="selectLeader('https://via.placeholder.com/150/0000FF/FFFFFF?text=Witch')"><img src="https://via.placeholder.com/150/0000FF/FFFFFF?text=Witch"></div>
+            
+            <!-- 自定義上傳按鈕 -->
+            <label class="leader-option" style="background-color: #666; font-size: 24px;">
+                +
+                <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileUpload(this)">
+            </label>
+        </div>
+        <button class="btn" style="background-color: #00d2ff; color: black;" onclick="startGame()">開始對戰</button>
+    </div>
+
+    <!-- SCREEN 2: 戰鬥計數器 (Life Counter) -->
+    <div id="screen-battle" class="screen">
+        <div class="battle-header">
+            <!-- 顯示選中的領袖圖片 -->
+            <img id="battleLeaderImg" class="main-leader-img" src="">
+        </div>
+
+        <!-- 生命值管理 -->
+        <div class="control-panel">
+            <div class="label">LEADER HP (生命值)</div>
+            <div class="stat-display" id="hpDisplay">20</div>
+            <div class="btn-group">
+                <button class="btn" onclick="updateHP(-1)">-1</button>
+                <button class="btn" onclick="updateHP(1)">+1</button>
+            </div>
+        </div>
+
+        <!-- PP 管理與回合邏輯 -->
+        <div class="control-panel">
+            <div class="label">PLAY POINTS (PP)</div>
+            <div class="stat-display">
+                <span id="ppCurrent">0</span> / <span id="ppMax">0</span>
+            </div>
+            <div class="btn-group">
+                <button class="btn" onclick="updatePP(-1)">PP -</button>
+                <button class="btn" onclick="updatePP(1)">PP +</button>
+            </div>
+            <!-- 這是最重要的邏輯：回合開始 -->
+            <button class="btn btn-turn" onclick="startTurn()">回合開始 (Turn Start)</button>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <div class="label">當前回合數: <span id="turnDisplay">0</span></div>
+            <button class="btn" style="margin-top: 10px; background-color: #888;" onclick="resetGame()">重置遊戲</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 遊戲狀態變數
+    let hp = 20;
+    let currentPP = 0;
+    let maxPP = 0;
+    let turnCount = 0;
+    let selectedImage = "";
+
+    // 1. 領袖選擇邏輯
+    function selectLeader(imageUrl) {
+        selectedImage = imageUrl;
+        // 視覺回饋：移除其他選中狀態 (此處簡化處理)
+        document.querySelectorAll('.leader-option').forEach(el => el.style.borderColor = '#666');
+        event.currentTarget.style.borderColor = '#00d2ff';
+    }
+
+    // 2. 處理使用者上傳圖片 (File Reader API)
+    function handleFileUpload(input) {
+        if (input.files && input.files) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedImage = e.target.result; // 將圖片轉為 DataURL
+                alert("圖片上傳成功！");
+            }
+            reader.readAsDataURL(input.files);
+        }
+    }
+
+    // 3. 進入戰鬥畫面
+    function startGame() {
+        if (!selectedImage) {
+            alert("請先選擇或上傳一張領袖圖片！");
+            return;
+        }
+        document.getElementById('battleLeaderImg').src = selectedImage;
+        document.getElementById('screen-select').classList.remove('active');
+        document.getElementById('screen-battle').classList.add('active');
+    }
+
+    // 4. 數值更新邏輯
+    function updateHP(amount) {
+        hp += amount;
+        document.getElementById('hpDisplay').innerText = hp;
+    }
+
+    function updatePP(amount) {
+        // 限制 PP 不能小於 0 或大於 Max
+        if (currentPP + amount >= 0 && currentPP + amount <= maxPP) {
+            currentPP += amount;
+            renderPP();
+        }
+    }
+
+    // 5. 回合開始邏輯 (參照官方 App 規則 [1])
+    // 規則：PP最大值+1，當前PP補滿，回合數+1
+    function startTurn() {
+        if (maxPP < 10) {
+            maxPP += 1;
+        }
+        currentPP = maxPP; // 補滿 PP
+        turnCount += 1;    // 增加回合數
+        
+        renderPP();
+        document.getElementById('turnDisplay').innerText = turnCount;
+    }
+
+    function renderPP() {
+        document.getElementById('ppCurrent').innerText = currentPP;
+        document.getElementById('ppMax').innerText = maxPP;
+    }
+
+    // 重置功能
+    function resetGame() {
+        if(confirm("確定要重置嗎？")) {
+            hp = 20; maxPP = 0; currentPP = 0; turnCount = 0;
+            updateHP(0);
+            renderPP();
+            document.getElementById('turnDisplay').innerText = 0;
+            document.getElementById('screen-battle').classList.remove('active');
+            document.getElementById('screen-select').classList.add('active');
+        }
+    }
+</script>
+
+</body>
+</html>
