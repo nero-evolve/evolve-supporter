@@ -3,92 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Evolve Tracker - Pro Final Fix</title>
+    <title>Evolve Tracker - Image Path Updated</title>
     <style>
-        /* --- 全局設定 --- */
+        /* --- 全局設定 (完全鎖定) --- */
         body { background-color: #121212; color: white; font-family: -apple-system, sans-serif; margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
         button, select { touch-action: manipulation; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; }
-        .btn { border: none; color: white; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: transform 0.05s; }
+        .btn { border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: transform 0.05s; }
         .btn:active { transform: scale(0.95); opacity: 0.9; }
 
-        /* --- 畫面 1: Setup (大幅壓縮高度) --- */
-        #screen-select { display: flex; flex-direction: column; justify-content: flex-start; align-items: center; height: 100%; background: #1a1a1a; z-index: 200; position: absolute; width: 100%; padding-top: 10px; box-sizing: border-box; }
-        
-        .order-selector { display: flex; gap: 10px; margin-bottom: 10px; background: #333; padding: 4px; border-radius: 6px; }
-        .order-opt { padding: 8px 30px; cursor: pointer; font-weight: bold; color: #aaa; font-size: 0.9rem; border-radius: 4px; }
+        /* --- 畫面 1: Setup --- */
+        #screen-select { display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; height: 100dvh; width: 100%; background: #1a1a1a; z-index: 200; position: absolute; padding: 5px 0; box-sizing: border-box; }
+        .order-selector { display: flex; gap: 8px; background: #333; padding: 3px; border-radius: 6px; }
+        .order-opt { padding: 6px 30px; cursor: pointer; font-weight: bold; color: #aaa; font-size: 0.85rem; border-radius: 4px; }
         .order-opt.active { background: #00d2ff; color: #000; }
-        
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 85%; }
-        .leader-opt { width: 100%; aspect-ratio: 1.4/1; border-radius: 8px; border: 2px solid #555; overflow: hidden; position: relative; background-size: cover; background-position: center; }
-        .leader-opt.selected { border-color: #00d2ff; box-shadow: 0 0 10px #00d2ff; }
-        .class-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.7); font-size: 0.7rem; text-align: center; padding: 2px 0; }
-        
-        .upload-section { margin-top: 10px; display: flex; gap: 8px; width: 90%; justify-content: center; }
-        .upload-btn-rect { flex: 1; height: 35px; max-width: 150px; background: #333; border-radius: 6px; display: flex; justify-content: center; align-items: center; border: 1px solid #555; position: relative; overflow: hidden; }
-        .upload-text { font-size: 0.7rem; color: #ccc; z-index: 2; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 90%; }
+        .leader-opt { width: 100%; aspect-ratio: 2.2/1; border-radius: 6px; border: 2px solid #555; overflow: hidden; position: relative; background-size: cover; background-position: center; }
+        .leader-opt.selected { border-color: #00d2ff; box-shadow: 0 0 8px #00d2ff; }
+        .class-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.7); font-size: 0.65rem; text-align: center; padding: 1px 0; }
+        .upload-section { display: flex; gap: 8px; width: 90%; justify-content: center; }
+        .upload-btn-rect { flex: 1; height: 35px; max-width: 140px; background: #333; border-radius: 4px; display: flex; justify-content: center; align-items: center; border: 1px solid #555; position: relative; overflow: hidden; }
+        .upload-text { font-size: 0.65rem; color: #ccc; z-index: 2; font-weight: bold; }
         .file-indicator { position: absolute; bottom: 0; left: 0; height: 3px; width: 0%; background: #4eff4e; transition: width 0.3s; }
-        
-        .start-btn { background:#00d2ff; color:#000; padding: 10px 60px; border-radius:30px; margin-top: 10px; font-size:1.1rem; font-weight:bold; }
+        .start-btn { background:#00d2ff; color:#000; padding: 8px 50px; border-radius:20px; font-size:1.1rem; font-weight:bold; }
 
-        /* --- 畫面 2: Battle (保持 Pro 版佈局) --- */
+        /* --- 畫面 2: Battle --- */
         #screen-battle { display: none; flex-direction: row; height: 100%; width: 100%; position: relative; }
         .top-toolbar { position: absolute; top: 10px; left: 8px; z-index: 100; display: flex; flex-direction: column; gap: 8px; align-items: center; }
         .btn-reset { background: #b71c1c; padding: 8px 0; font-size: 0.8rem; border-radius: 6px; width: 80px; }
-        .class-select-dropdown { background: #222; color: white; border: 1px solid #555; font-size: 0.8rem; width: 80px; height: 35px; border-radius: 6px; }
         .dice-sidebar-btn { width: 50px; height: 50px; background: white; color: black; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; box-shadow: 0 4px 10px #000; cursor: pointer; }
 
         /* 左側 PP 面板 */
-        .left-panel-pp { width: 26%; background-color: #111; border-right: 2px solid #333; display: flex; flex-direction: column; padding: 8px 5px; box-sizing: border-box; }
+        .left-panel-pp { width: 26%; background-color: #111; border-right: 2px solid #333; display: flex; flex-direction: column; padding: 5px; box-sizing: border-box; justify-content: space-between; }
         .pp-gauge-container { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 3px; margin: 5px 0; }
         .pp-header { font-size: 0.8rem; color: #aaa; text-align: center; font-weight: bold; margin-bottom: 2px; }
         .pp-nums { font-size: 1.2rem; color: #4eff4e; font-weight: bold; }
         .pp-nums.awakened { color: #ff9800; text-shadow: 0 0 5px #ff5722; }
         .pp-gem { width: 28px; height: 28px; border-radius: 50%; background: #222; border: 2px solid #444; display: none; justify-content: center; align-items: center; font-size: 0.8rem; font-weight: bold; color: #555; transition: 0.2s; flex-shrink: 0; }
-        .pp-gem.active { background: radial-gradient(circle at 30% 30%, #4eff4e, #008000); border-color: #ccffcc; color: #004d00; box-shadow: 0 0 5px #4eff4e; }
+        .pp-gem.active { background: radial-gradient(circle at 30% 30%, #4eff4e, #008000); border-color: #ccffcc; box-shadow: 0 0 5px #4eff4e; }
         .pp-gem.used { background: #1a1a1a; opacity: 0.4; }
         .pp-gem.active.awakened { background: radial-gradient(circle at 30% 30%, #ffc107, #ff5722); border-color: #ffcc80; box-shadow: 0 0 8px #ff5722; }
-        
         .pp-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         .btn-manual { background: #333; border: 1px solid #555; padding: 8px 0; font-size: 0.8rem; }
-        .btn-turn-start { width: 100%; padding: 10px 0; background: linear-gradient(135deg, #0056b3, #004494); font-size: 0.9rem; border-radius: 8px; margin-top: 5px; }
+        .btn-turn-start { width: 100%; padding: 10px 0; background: linear-gradient(135deg, #0056b3, #004494); font-size: 1rem; border-radius: 8px; margin-top: 5px; }
 
-        /* 右側主戰者區域 (35/45/20) */
+        /* 右側主戰者區域 (放大框與血量) */
         .right-panel-hp { width: 74%; display: flex; flex-direction: column; }
-        .battle-section { height: 40%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid #333; box-sizing: border-box; }
+        .battle-section { height: 40%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; position: relative; border-bottom: 1px solid #333; box-sizing: border-box; padding-top: 5px; }
         .section-enemy { background-color: #1e1515; }
         .section-player { background-color: #15181e; }
         .section-player.awakened-bg { background: radial-gradient(circle at center, #2d1a1a, #15181e); }
 
-        .hp-control-row { display: flex; align-items: center; gap: 15px; z-index: 10; margin-bottom: 3px; }
-        .hp-text { font-size: 2.5rem; font-weight: 900; color: #fff; min-width: 70px; text-align: center; text-shadow: 0 2px 10px #000; }
-        .btn-hp { width: 42px; height: 42px; border-radius: 50%; font-size: 1.8rem; }
+        .hp-control-row { display: flex; align-items: center; gap: 20px; z-index: 10; margin-bottom: 2px; }
+        .hp-text { font-size: 3.2rem; font-weight: 900; color: #fff; min-width: 85px; text-align: center; text-shadow: 0 2px 10px #000; }
+        .btn-hp { width: 50px; height: 50px; border-radius: 50%; font-size: 2rem; }
         .btn-minus { background: #b71c1c; }
         .btn-plus { background: #1b5e20; }
         
-        .leader-landscape-frame { width: 94%; height: 50%; border: 2px solid #555; border-radius: 8px; overflow: hidden; background: #000; transition: 0.5s; }
+        .leader-landscape-frame { width: 96%; height: 72%; border: 2px solid #555; border-radius: 8px; overflow: hidden; background: #000; transition: 0.5s; cursor: pointer; }
         .leader-landscape-frame img { width: 100%; height: 100%; object-fit: cover; }
-        .leader-landscape-frame.burning { border-color: #ff9800; box-shadow: 0 0 15px #ff5722; animation: burnPulse 1.5s infinite alternate; }
+        .leader-landscape-frame.burning { border-color: #ff9800; box-shadow: 0 0 20px #ff5722; animation: burnPulse 1.5s infinite alternate; }
         @keyframes burnPulse { 0% { opacity: 0.85; } 100% { opacity: 1; } }
 
         /* 底部區域 */
         .section-footer { height: 20%; background-color: #111; display: flex; align-items: center; padding: 0 10px; gap: 10px; overflow-x: auto; }
-        .ep-sep-group { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 5px 8px; border-radius: 10px; border: 1px solid #333; flex-shrink: 0; }
-        .sep-gem { width: 28px; height: 28px; background: #222; border: 1px solid #444; transform: rotate(45deg); display: flex; justify-content: center; align-items: center; cursor: pointer; }
-        .sep-gem span { transform: rotate(-45deg); font-size: 0.5rem; font-weight: bold; }
-        .sep-gem.active { background: #e040fb; box-shadow: 0 0 10px #e040fb; color: white; animation: pulseSep 2s infinite; }
-        .sep-gem.used { opacity: 0.2; }
+        .ep-sep-group { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 5px 8px; border-radius: 10px; border: 1px solid #333; flex-shrink: 0; }
+        .sep-gem { width: 30px; height: 30px; background: #222; border: 1px solid #444; transform: rotate(45deg); display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .sep-gem span { transform: rotate(-45deg); font-size: 0.6rem; font-weight: bold; }
+        .sep-gem.active { background: #e040fb; box-shadow: 0 0 10px #e040fb; color: white; }
         .ep-container { display: flex; gap: 6px; }
-        .ep-gem { width: 18px; height: 18px; background: #333; border: 1px solid #555; transform: rotate(45deg); opacity: 0.3; }
+        .ep-gem { width: 20px; height: 20px; background: #333; border: 1px solid #555; transform: rotate(45deg); opacity: 0.3; }
         .ep-gem.active { background: #ffd700; opacity: 1; box-shadow: 0 0 5px #ffd700; }
-
         .class-counters { display: flex; gap: 8px; }
-        .counter-box { background: #222; border: 1px solid #444; border-radius: 6px; padding: 5px 8px; text-align: center; min-width: 50px; }
-        .counter-label { font-size: 0.55rem; color: #aaa; margin-bottom: 2px; }
-        .counter-val { font-size: 1rem; font-weight: bold; }
-        .btn-tiny { width: 22px; height: 22px; background: #333; border: 1px solid #555; }
-        .btn-toggle { padding: 4px 10px; font-size: 0.7rem; background: #333; border-radius: 4px; }
+        .counter-box { background: #222; border: 1px solid #444; border-radius: 6px; padding: 6px 10px; text-align: center; min-width: 55px; }
+        .counter-label { font-size: 0.6rem; color: #aaa; }
+        .counter-val { font-size: 1.2rem; font-weight: bold; }
+        .btn-tiny { width: 25px; height: 25px; background: #333; border: 1px solid #555; }
+        .btn-toggle { padding: 5px 12px; font-size: 0.8rem; background: #333; border-radius: 4px; }
         .btn-toggle.on { background: #b71c1c; color: white; }
-        .btn-rotate { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 4px; z-index: 20; font-size: 0.8rem; }
+        .btn-rotate { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 4px; z-index: 20; }
     </style>
 </head>
 <body>
@@ -98,12 +90,10 @@
         <div class="order-opt active" id="optFirst" onclick="sfx('tick'); setOrder('first')">先攻</div>
         <div class="order-opt" id="optSecond" onclick="sfx('tick'); setOrder('second')">後攻</div>
     </div>
-
     <div class="grid" id="leaderGrid"></div>
-
     <div class="upload-section">
-        <label class="upload-btn-rect" onclick="sfx('click')"><span class="upload-text">📷 上傳主戰者圖片</span><div class="file-indicator" id="imageIndicator"></div><input type="file" accept="image/*" style="display: none;" onchange="handleImageUpload(this)"></label>
-        <label class="upload-btn-rect" onclick="sfx('click')"><span class="upload-text">🎵 上傳主戰者語音</span><div class="file-indicator" id="audioIndicator"></div><input type="file" accept="audio/*" style="display: none;" onchange="handleAudioUpload(this)"></label>
+        <label class="upload-btn-rect" onclick="sfx('click')"><span class="upload-text">📷 上傳主戰者圖</span><div class="file-indicator" id="imageIndicator"></div><input type="file" accept="image/*" style="display: none;" onchange="handleImageUpload(this)"></label>
+        <label class="upload-btn-rect" onclick="sfx('click')"><span class="upload-text">🎵 上傳主戰者音</span><div class="file-indicator" id="audioIndicator"></div><input type="file" accept="audio/*" style="display: none;" onchange="handleAudioUpload(this)"></label>
     </div>
     <button class="btn start-btn" onclick="sfx('confirm'); startGame()">BATTLE START</button>
 </div>
@@ -111,12 +101,8 @@
 <div id="screen-battle">
     <div class="top-toolbar">
         <button class="btn btn-reset" onclick="sfx('click'); resetGame()">RESET</button>
-        <select class="class-select-dropdown" id="battleClassSelect" onchange="changeClassInBattle(this.value)">
-            <option value="elf">精靈</option><option value="royal">皇家</option><option value="witch">巫師</option><option value="drag">龍族</option><option value="nightmare">夢魘</option><option value="bishop">主教</option>
-        </select>
         <div class="dice-sidebar-btn" id="diceResult" onclick="rollDice()">🎲</div>
     </div>
-
     <div class="left-panel-pp">
         <div class="pp-gauge-container" id="ppGaugeContainer">
             <div class="pp-header">PP <span class="pp-nums" id="ppNumsDisplay"><span id="currentPP">0</span>/<span id="maxPP">0</span></span></div>
@@ -130,7 +116,6 @@
         </div>
         <button class="btn btn-turn-start" onclick="sfx('powerup'); startTurn()">回合開始</button>
     </div>
-
     <div class="right-panel-hp">
         <div class="battle-section section-enemy" id="enemySection">
             <button class="btn btn-rotate" onclick="sfx('tick'); rotateEnemy()">↻</button>
@@ -139,18 +124,16 @@
                 <div class="hp-text" id="enemyHP">20</div>
                 <button class="btn btn-hp btn-plus" onclick="modHP('enemy',1)">+</button>
             </div>
-            <div class="leader-landscape-frame"><img src="https://via.placeholder.com/600/333/FFF?text=Enemy"></div>
+            <div class="leader-landscape-frame" onclick="playEnemyVoice()"><img src="image/enemy_default.png" id="enemyAvatar"></div>
         </div>
-
         <div class="battle-section section-player" id="playerSection">
             <div class="hp-control-row">
                 <button class="btn btn-hp btn-minus" onclick="modHP('player',-1)">-</button>
                 <div class="hp-text" id="playerHP">20</div>
                 <button class="btn btn-hp btn-plus" onclick="modHP('player',1)">+</button>
             </div>
-            <div class="leader-landscape-frame" id="playerFrame"><img id="myAvatar" src="" onclick="playUserVoice()"></div>
+            <div class="leader-landscape-frame" id="playerFrame" onclick="playUserVoice()"><img id="myAvatar" src=""></div>
         </div>
-
         <div class="section-footer">
             <div class="ep-sep-group">
                 <div class="sep-gem" id="sepGem" onclick="toggleSEP()"><span>SEP</span></div>
@@ -164,11 +147,11 @@
 </div>
 
 <script>
-    // --- 所有原本要求的功能邏輯 100% 保留 ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let uploadedAudio = new Audio();
     let hasUploadedAudio = false;
-    let isRotated = false;
+    let enemyVoice = new Audio('voice/enemy_click.mp3');
+    let currentClassVoices = { start: null, click: null };
 
     function sfx(type) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -176,42 +159,88 @@
         const gainNode = audioCtx.createGain();
         osc.connect(gainNode); gainNode.connect(audioCtx.destination);
         const now = audioCtx.currentTime;
-        if (type === 'click') { osc.type = 'square'; osc.frequency.setValueAtTime(400, now); gainNode.gain.setValueAtTime(0.1, now); osc.start(now); osc.stop(now + 0.1); }
-        else if (type === 'tick') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, now); gainNode.gain.setValueAtTime(0.05, now); osc.start(now); osc.stop(now + 0.05); }
-        else if (type === 'confirm') { osc.type = 'triangle'; osc.frequency.setValueAtTime(400, now); gainNode.gain.setValueAtTime(0.1, now); osc.start(now); osc.stop(now + 0.2); }
-        else if (type === 'powerup') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); gainNode.gain.setValueAtTime(0.1, now); osc.start(now); osc.stop(now + 0.4); }
+        osc.type = 'sine';
+        if (type === 'tick') { 
+            osc.frequency.setValueAtTime(660, now);
+            gainNode.gain.setValueAtTime(0.08, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1); 
+        }
+        else if (type === 'confirm') { 
+            osc.frequency.setValueAtTime(440, now);
+            gainNode.gain.setValueAtTime(0.1, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+            osc.start(now); osc.stop(now + 0.2); 
+        }
+        else if (type === 'click') { 
+            osc.frequency.setValueAtTime(523, now);
+            gainNode.gain.setValueAtTime(0.05, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1); 
+        }
+        else if (type === 'powerup') { 
+            osc.frequency.setValueAtTime(220, now); 
+            osc.frequency.exponentialRampToValueAtTime(440, now + 0.3);
+            gainNode.gain.setValueAtTime(0.1, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+            osc.start(now); osc.stop(now + 0.4); 
+        }
     }
 
     let state = { playerHP: 20, enemyHP: 20, currentPP: 0, maxPP: 0, turn: 0, imgSrc: '', uploadedImgSrc: '', playerClass: 'elf', isFirstPlayer: true, sepUsed: false, combo: 0, cemetery: 0, spellboost: 0, necroCharge: 0, isCrimson: false, isImprisoned: false };
 
+    // --- 資料夾路徑更新為 image/ ---
     const leaders = [
-        { id: 'elf', name: '精靈', color: '2E7D32' }, { id: 'royal', name: '皇家', color: 'FBC02D' },
-        { id: 'witch', name: '巫師', color: '1565C0' }, { id: 'drag', name: '龍族', color: 'E65100' },
-        { id: 'nightmare', name: '夢魘', color: 'B71C1C' }, { id: 'bishop', name: '主教', color: 'F0F4C3' }
+        { id: 'elf', name: '精靈', img: 'image/elf.png', vStart: 'voice/elf_start.mp3', vClick: 'voice/elf_click.mp3' }, 
+        { id: 'royal', name: '皇家', img: 'image/royal.png', vStart: 'voice/royal_start.mp3', vClick: 'voice/royal_click.mp3' },
+        { id: 'witch', name: '巫師', img: 'image/witch.png', vStart: 'voice/witch_start.mp3', vClick: 'voice/witch_click.mp3' }, 
+        { id: 'drag', name: '龍族', img: 'image/drag.png', vStart: 'voice/drag_start.mp3', vClick: 'voice/drag_click.mp3' },
+        { id: 'nightmare', name: '夢魘', img: 'image/nightmare.png', vStart: 'voice/nightmare_start.mp3', vClick: 'voice/nightmare_click.mp3' }, 
+        { id: 'bishop', name: '主教', img: 'image/bishop.png', vStart: 'voice/bishop_start.mp3', vClick: 'voice/bishop_click.mp3' }
     ];
 
     function initLeaderGrid() {
-        const grid = document.getElementById('leaderGrid');
+        const grid = document.getElementById('leaderGrid'); grid.innerHTML = '';
         leaders.forEach(l => {
             const div = document.createElement('div');
             div.className = 'leader-opt';
-            div.style.backgroundImage = `url('https://via.placeholder.com/400/${l.color}/FFFFFF?text=${l.id}')`;
+            div.style.backgroundImage = `url('${l.img}')`;
             div.innerHTML = `<div class="class-label">${l.name}</div>`;
-            div.onclick = () => selectLeader(div, l.id, `https://via.placeholder.com/400/${l.color}/FFFFFF?text=${l.id}`);
+            div.onclick = () => selectLeader(div, l);
             grid.appendChild(div);
         });
     }
     initLeaderGrid();
 
+    function selectLeader(el, leaderObj) {
+        document.querySelectorAll('.leader-opt').forEach(d => d.classList.remove('selected'));
+        el.classList.add('selected');
+        state.playerClass = leaderObj.id;
+        state.imgSrc = state.uploadedImgSrc || leaderObj.img;
+        currentClassVoices.start = new Audio(leaderObj.vStart);
+        currentClassVoices.click = new Audio(leaderObj.vClick);
+        currentClassVoices.start.play().catch(e => console.log("Voice Autoplay blocked", e));
+        sfx('confirm');
+    }
+
+    function startGame() {
+        if (!state.imgSrc) { alert("請先選擇主戰者職業"); return; }
+        document.getElementById('myAvatar').src = state.imgSrc;
+        document.getElementById('screen-select').style.display = 'none';
+        document.getElementById('screen-battle').style.display = 'flex';
+        initGauge(); renderClassUI(); updateEPUi(); updateSEPUi();
+    }
+
+    function playUserVoice() {
+        if (hasUploadedAudio) { uploadedAudio.currentTime = 0; uploadedAudio.play(); }
+        else if (currentClassVoices.click) { currentClassVoices.click.currentTime = 0; currentClassVoices.click.play().catch(()=>{}); }
+    }
+    function playEnemyVoice() { enemyVoice.currentTime = 0; enemyVoice.play().catch(()=>{}); }
+
     function setOrder(order) {
         state.isFirstPlayer = (order === 'first');
         document.getElementById('optFirst').className = state.isFirstPlayer ? 'order-opt active' : 'order-opt';
         document.getElementById('optSecond').className = !state.isFirstPlayer ? 'order-opt active' : 'order-opt';
-    }
-
-    function selectLeader(el, cls, url) {
-        document.querySelectorAll('.leader-opt').forEach(d => d.classList.remove('selected'));
-        el.classList.add('selected'); state.playerClass = cls; state.imgSrc = state.uploadedImgSrc || url; sfx('tick');
     }
 
     function handleImageUpload(input) {
@@ -221,24 +250,12 @@
             reader.readAsDataURL(input.files[0]);
         }
     }
-
     function handleAudioUpload(input) {
         if (input.files && input.files[0]) {
             uploadedAudio.src = URL.createObjectURL(input.files[0]);
             uploadedAudio.load(); hasUploadedAudio = true;
             document.getElementById('audioIndicator').style.width = "100%"; sfx('confirm');
         }
-    }
-
-    function playUserVoice() { if (hasUploadedAudio) { uploadedAudio.currentTime = 0; uploadedAudio.play(); } else { sfx('tick'); } }
-
-    function startGame() {
-        if (!state.imgSrc) { alert("請選擇主戰者職業"); return; }
-        document.getElementById('myAvatar').src = state.imgSrc;
-        document.getElementById('battleClassSelect').value = state.playerClass;
-        document.getElementById('screen-select').style.display = 'none';
-        document.getElementById('screen-battle').style.display = 'flex';
-        initGauge(); renderClassUI(); updateEPUi(); updateSEPUi();
     }
 
     function initGauge() {
@@ -249,11 +266,9 @@
         }
         renderPP();
     }
-
     function togglePP(idx) { state.currentPP = (state.currentPP >= idx) ? idx - 1 : idx; renderPP(); }
     function modPP(val) { state.currentPP = Math.max(0, Math.min(state.maxPP, state.currentPP + val)); renderPP(); sfx('click'); }
     function modMaxPP(val) { state.maxPP = Math.max(0, Math.min(10, state.maxPP + val)); if(state.currentPP > state.maxPP) state.currentPP = state.maxPP; renderPP(); sfx('click'); }
-
     function renderPP() {
         document.getElementById('currentPP').innerText = state.currentPP;
         document.getElementById('maxPP').innerText = state.maxPP;
@@ -272,7 +287,6 @@
             } else { gem.style.display = 'none'; }
         });
     }
-
     function startTurn() {
         state.turn++; if (state.maxPP < 10) state.maxPP++;
         state.currentPP = state.maxPP;
@@ -280,22 +294,19 @@
         if (state.playerClass === 'nightmare') state.isCrimson = false;
         renderPP(); renderClassUI(); updateSEPUi();
     }
-
     function updateSEPUi() {
         const canUse = (state.isFirstPlayer && state.turn >= 7) || (!state.isFirstPlayer && state.turn >= 6);
         const sep = document.getElementById('sepGem');
         sep.className = !canUse ? 'sep-gem' : (state.sepUsed ? 'sep-gem used' : 'sep-gem active');
     }
     function toggleSEP() { if(document.getElementById('sepGem').classList.contains('active')) { state.sepUsed = true; sfx('powerup'); updateSEPUi(); } }
-    
     function updateEPUi() {
         const eps = document.getElementById('epBox').children;
         const count = state.isFirstPlayer ? 0 : 3;
         for(let i=0; i<3; i++) { eps[i].className = (i < count) ? 'ep-gem active' : 'ep-gem'; }
     }
     function toggleEP(el) { if(el.classList.contains('ep-gem')) el.classList.toggle('active'); }
-    function modHP(who, val) { state[who+'HP'] += val; document.getElementById(who+'HP').innerText = state[who+'HP']; sfx('click'); }
-
+    function modHP(who, val) { state[who+'HP'] += val; document.getElementById(who+'HP').innerText = state[who+'HP']; sfx('tick'); }
     function renderClassUI() {
         const container = document.getElementById('classCounters'); container.innerHTML = '';
         const addC = (lbl, key) => {
@@ -314,12 +325,11 @@
         if(state.playerClass==='witch') addC('增幅','spellboost');
         if(state.playerClass==='nightmare') { addT('真紅','isCrimson'); addC('充能','necroCharge'); }
     }
-
-    window.modCounter = (k, v) => { state[k]=Math.max(0, state[k]+v); document.getElementById('v-'+k).innerText=state[k]; sfx('click'); };
-    window.togState = (k) => { state[k]=!state[k]; sfx('tick'); renderClassUI(); };
-    function changeClassInBattle(v) { state.playerClass=v; sfx('confirm'); renderClassUI(); renderPP(); }
-    function rollDice() { const d = document.getElementById('diceResult'); sfx('click'); let count = 0; let inv = setInterval(() => { d.innerText = Math.floor(Math.random()*6)+1; if(count++ > 6) { d.innerText = Math.floor(Math.random()*6)+1; clearInterval(inv); } }, 50); }
+    window.modCounter = (k, v) => { state[k]=Math.max(0, state[k]+v); document.getElementById('v-'+k).innerText=state[k]; sfx('tick'); };
+    window.togState = (k) => { state[k]=!state[k]; sfx('confirm'); renderClassUI(); };
+    function rollDice() { const d = document.getElementById('diceResult'); sfx('confirm'); let count = 0; let inv = setInterval(() => { d.innerText = Math.floor(Math.random()*6)+1; if(count++ > 6) { d.innerText = Math.floor(Math.random()*6)+1; clearInterval(inv); } }, 50); }
     function rotateEnemy() { isRotated = !isRotated; document.getElementById('enemySection').style.transform = isRotated ? "rotate(180deg)" : "none"; }
+    let isRotated = false;
     function resetGame() { if(confirm("確定重置遊戲？")) location.reload(); }
 </script>
 </body>
