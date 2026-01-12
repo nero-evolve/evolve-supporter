@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Evolve Tracker - Perfect PP Flow</title>
+    <title>Evolve Tracker - Layout Final Fix</title>
     <style>
         /* --- 全局設定 --- */
         body { background-color: #121212; color: white; font-family: -apple-system, sans-serif; margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
@@ -20,7 +20,8 @@
         .leader-opt { width: 75px; height: 75px; border-radius: 50%; border: 3px solid #555; overflow: hidden; position: relative; background-size: cover; background-position: center; }
         .leader-opt.selected { border-color: #00d2ff; }
         .class-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.6); font-size: 0.6rem; text-align: center; }
-        .upload-btn-rect { width: 220px; height: 40px; background: #333; border-radius: 20px; display: flex; justify-content: center; align-items: center; margin-top: 15px; border: 1px solid #555; position: relative; overflow: hidden; }
+        .upload-section { margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+        .upload-btn-rect { width: 220px; height: 40px; background: #333; border-radius: 20px; display: flex; justify-content: center; align-items: center; border: 1px solid #555; position: relative; overflow: hidden; }
         .upload-text { font-size: 0.85rem; color: #ccc; z-index: 2; font-weight: bold; pointer-events: none; }
         .file-indicator { position: absolute; bottom: 0; left: 0; height: 4px; width: 0%; background: #4eff4e; transition: width 0.3s; }
 
@@ -30,25 +31,29 @@
         .btn-reset { background: #b71c1c; padding: 4px 8px; font-size: 0.65rem; border-radius: 4px; }
         .class-select-dropdown { background: #222; color: white; border: 1px solid #555; font-size: 0.7rem; width: 75px; border-radius: 4px; }
 
-        /* --- 左側 PP 面板 (核心修正) --- */
+        /* --- 左側 PP 面板 (數值下移至珠子上方) --- */
         .left-panel-pp { width: 28%; background-color: #111; border-right: 2px solid #333; display: flex; flex-direction: column; padding: 10px 6px; box-sizing: border-box; }
-        .pp-header { font-size: 0.9rem; color: #aaa; text-align: center; font-weight: bold; }
-        .pp-nums { font-size: 1.4rem; color: #4eff4e; font-weight: bold; }
+        
+        /* 數值標題：現在放在容器內，會跟著珠子走 */
+        .pp-header { font-size: 0.85rem; color: #aaa; text-align: center; font-weight: bold; margin-bottom: 5px; }
+        .pp-nums { font-size: 1.3rem; color: #4eff4e; font-weight: bold; }
         .pp-nums.awakened { color: #ff9800; text-shadow: 0 0 5px #ff5722; }
         
-        /* 關鍵：flex-start 確保從底部開始堆疊 */
-        .pp-gauge-container { flex-grow: 1; display: flex; flex-direction: column-reverse; justify-content: flex-start; align-items: center; gap: 5px; margin: 10px 0; padding-top: 40px; }
+        /* 珠子容器：justify-content: flex-end 讓內容靠底部，且 column 正常排列 */
+        .pp-gauge-container { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; margin: 10px 0; }
+        
+        /* 珠子本身 */
         .pp-gem { width: 32px; height: 32px; border-radius: 50%; background: #222; border: 1px solid #444; display: none; justify-content: center; align-items: center; font-size: 0.9rem; font-weight: bold; color: #555; transition: 0.2s; flex-shrink: 0; }
         .pp-gem.active { background: radial-gradient(circle at 30% 30%, #4eff4e, #008000); border-color: #ccffcc; color: #004d00; box-shadow: 0 0 8px #4eff4e; }
         .pp-gem.used { background: #1a1a1a; opacity: 0.4; }
         .pp-gem.active.awakened { background: radial-gradient(circle at 30% 30%, #ffc107, #ff5722); border-color: #ffcc80; box-shadow: 0 0 10px #ff5722; }
 
-        .controls-wrapper { width: 100%; margin-top: auto; }
+        .controls-wrapper { width: 100%; margin-top: 5px; }
         .pp-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         .btn-manual { background: #333; border: 1px solid #555; padding: 10px 0; font-size: 0.8rem; }
         .btn-turn-start { width: 100%; padding: 12px 0; background: linear-gradient(135deg, #0056b3, #004494); font-size: 0.9rem; border-radius: 8px; margin-top: 6px; }
 
-        /* --- 右側 面板分區 --- */
+        /* --- 右側 面板分區 (維持你要的 35/45/20) --- */
         .right-panel-hp { width: 72%; display: flex; flex-direction: column; }
         .section-enemy { height: 35%; background-color: #251818; border-bottom: 1px solid #444; display: flex; align-items: center; justify-content: center; position: relative; }
         .section-player { height: 45%; background-color: #181d25; display: flex; align-items: center; justify-content: center; position: relative; }
@@ -60,7 +65,7 @@
         .avatar-player.burning { border-color: #ff9800; animation: burnPulse 1.5s infinite alternate; }
         @keyframes burnPulse { 0% { box-shadow: 0 0 5px #ff5722; } 100% { box-shadow: 0 0 15px #ff9800; } }
 
-        .hp-text { font-size: 1.8rem; font-weight: 900; color: #fff; margin-top: 8px; background: rgba(0,0,0,0.6); padding: 1px 12px; border-radius: 10px; text-shadow: 0 0 4px #000; z-index: 10; }
+        .hp-text { font-size: 1.8rem; font-weight: 900; color: #fff; margin-top: 5px; background: rgba(0,0,0,0.6); padding: 1px 12px; border-radius: 10px; text-shadow: 0 0 4px #000; z-index: 10; }
         
         .btn-hp { width: 45px; height: 45px; border-radius: 50%; font-size: 1.6rem; }
         .btn-minus { background: #b71c1c; } 
@@ -71,7 +76,6 @@
         .sep-gem { width: 26px; height: 26px; background: #222; border: 1px solid #444; transform: rotate(45deg); display: flex; justify-content: center; align-items: center; margin-bottom: 8px; }
         .sep-gem span { transform: rotate(-45deg); font-size: 0.5rem; }
         .sep-gem.active { background: #e040fb; box-shadow: 0 0 8px #e040fb; color: white; }
-        
         .ep-container { display: flex; flex-direction: column-reverse; gap: 4px; }
         .ep-gem { width: 16px; height: 16px; border: 1px solid #555; transform: rotate(45deg); opacity: 0.3; }
         .ep-gem.has-ep { opacity: 1; background: #5a4a00; }
@@ -84,7 +88,6 @@
         .btn-tiny { width: 24px; height: 24px; font-size: 0.9rem; background: #333; color: white; border: 1px solid #555; }
         .btn-toggle { padding: 4px 10px; font-size: 0.7rem; border-radius: 4px; background: #333; color: #888; border: 1px solid #555; }
         .btn-toggle.on { background: #b71c1c; color: white; }
-        .btn-toggle.prison.on { background: #4a148c; border-color: #ea80fc; }
         
         .dice-btn { width: 45px; height: 45px; background: white; color: black; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; }
     </style>
@@ -121,8 +124,11 @@
     </div>
 
     <div class="left-panel-pp">
-        <div class="pp-header">PP <span class="pp-nums" id="ppNumsDisplay"><span id="currentPP">0</span>/<span id="maxPP">0</span></span></div>
-        <div class="pp-gauge-container" id="ppGauge"></div>
+        <div class="pp-gauge-container" id="ppGaugeContainer">
+            <div class="pp-header">PP <span class="pp-nums" id="ppNumsDisplay"><span id="currentPP">0</span>/<span id="maxPP">0</span></span></div>
+            <div id="ppGemsLayer" style="display:contents;"></div>
+        </div>
+        
         <div class="controls-wrapper">
             <div class="pp-btn-grid">
                 <button class="btn btn-manual" onclick="modPP(-1)">PP-</button>
@@ -226,10 +232,16 @@
     }
 
     function initGauge() {
-        const container = document.getElementById('ppGauge'); container.innerHTML = '';
-        for (let i = 1; i <= 10; i++) {
-            let gem = document.createElement('div'); gem.className = 'pp-gem'; gem.innerText = i; gem.dataset.index = i;
-            gem.onclick = () => { sfx('click'); togglePP(i); }; container.appendChild(gem);
+        // 修改 JS：珠子要插入到 GemsLayer 裡面，並維持正確的層級
+        const layer = document.getElementById('ppGemsLayer'); 
+        layer.innerHTML = '';
+        for (let i = 10; i >= 1; i--) { // 改為 10 到 1 以配合 column 排列
+            let gem = document.createElement('div'); 
+            gem.className = 'pp-gem'; 
+            gem.innerText = i; 
+            gem.dataset.index = i;
+            gem.onclick = () => { sfx('click'); togglePP(i); }; 
+            layer.appendChild(gem);
         }
         renderPP();
     }
@@ -247,6 +259,7 @@
         const section = document.getElementById('playerSection');
         if(isAwakened) { ppNums.classList.add('awakened'); avatar.classList.add('burning'); section.classList.add('awakened-bg'); }
         else { ppNums.classList.remove('awakened'); avatar.classList.remove('burning'); section.classList.remove('awakened-bg'); }
+        
         document.querySelectorAll('.pp-gem').forEach((gem) => {
             const num = parseInt(gem.dataset.index);
             if (num <= state.maxPP) {
@@ -272,13 +285,11 @@
     }
 
     function toggleSEP() { if(document.getElementById('sepGem').classList.contains('active')) { state.sepUsed = true; sfx('powerup'); updateSEPUi(); } }
-
     function updateEPUi() {
         const eps = document.getElementById('epBox').children;
         const count = state.isFirstPlayer ? 0 : 3;
         for(let i=0; i<3; i++) { eps[i].className = (i < count) ? 'ep-gem has-ep active' : 'ep-gem'; }
     }
-
     function toggleEP(el) { if(el.classList.contains('has-ep')) el.classList.toggle('active'); }
     function modHP(who, val) { state[who+'HP'] += val; document.getElementById(who+'HP').innerText = state[who+'HP']; sfx('click'); }
 
