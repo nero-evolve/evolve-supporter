@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Evolve Tracker - Audio Restored</title>
+    <title>Evolve Tracker - Turn Counter Edition</title>
     <style>
-        /* --- 全局設定 --- */
+        /* --- 全局設定 (完全鎖定) --- */
         body { background-color: #121212; color: white; font-family: -apple-system, sans-serif; margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
         button, select { touch-action: manipulation; outline: none; -webkit-tap-highlight-color: transparent; user-select: none; }
         .btn { border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: transform 0.05s; }
@@ -23,9 +23,11 @@
         .leader-opt { width: 100%; aspect-ratio: 1.8/1; border-radius: 10px; border: 3px solid #555; overflow: hidden; position: relative; background-size: cover; background-position: center; }
         .leader-opt.selected { border-color: #00d2ff; box-shadow: 0 0 12px #00d2ff; }
         .class-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.7); font-size: 1rem; font-weight: bold; text-align: center; padding: 4px 0; letter-spacing: 2px; }
-        .upload-section { display: flex; gap: 8px; width: 90%; justify-content: center; }
-        .upload-btn-rect { flex: 1; height: 35px; max-width: 140px; background: #333; border-radius: 4px; display: flex; justify-content: center; align-items: center; border: 1px solid #555; position: relative; overflow: hidden; cursor: pointer; }
-        .upload-text { font-size: 0.65rem; color: #ccc; z-index: 2; font-weight: bold; }
+        .upload-wrapper { width: 92%; display: flex; flex-direction: column; gap: 8px; }
+        .upload-row { display: flex; gap: 8px; justify-content: center; }
+        .upload-group-label { font-size: 0.7rem; color: #888; text-align: center; margin-bottom: -4px; font-weight: bold; }
+        .upload-btn-rect { flex: 1; height: 32px; background: #333; border-radius: 4px; display: flex; justify-content: center; align-items: center; border: 1px solid #555; position: relative; overflow: hidden; cursor: pointer; }
+        .upload-text { font-size: 0.6rem; color: #ccc; z-index: 2; font-weight: bold; }
         .file-indicator { position: absolute; bottom: 0; left: 0; height: 3px; width: 0%; background: #4eff4e; transition: width 0.3s; z-index: 1; }
         .start-btn { background:#00d2ff; color:#000; padding: 10px 60px; border-radius:25px; font-size:1.2rem; font-weight:bold; }
 
@@ -37,7 +39,7 @@
         .btn-jail-sidebar { width: 85px; padding: 8px 0; background: #333; border: 1px solid #555; color: #aaa; font-size: 0.9rem; border-radius: 8px; }
         .btn-jail-sidebar.on { background: #b71c1c; color: white; border-color: #ff5252; box-shadow: 0 0 8px #b71c1c; }
 
-        /* PP 面板 */
+        /* PP 面板與回合數顯示 */
         .left-panel-pp { width: 28%; background-color: #111; border-right: 2px solid #333; display: flex; flex-direction: column; padding: 10px 8px; box-sizing: border-box; justify-content: flex-end; }
         .pp-gauge-container { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; margin-bottom: 10px; }
         .pp-header { font-size: 0.85rem; color: #aaa; text-align: center; font-weight: bold; margin-bottom: 4px; }
@@ -50,6 +52,8 @@
         .pp-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .btn-manual { background: #333; border: 1px solid #555; padding: 14px 0; font-size: 1rem; }
         .btn-turn-start { width: 100%; padding: 18px 0; background: linear-gradient(135deg, #0056b3, #004494); font-size: 1.2rem; border-radius: 10px; margin-top: 8px; }
+        /* 回合顯示 CSS */
+        .turn-display { text-align: center; font-size: 1.1rem; font-weight: 900; color: #aaa; margin-top: 8px; letter-spacing: 2px; }
 
         /* 右側主戰者區域 */
         .right-panel-hp { width: 72%; display: flex; flex-direction: column; }
@@ -89,15 +93,25 @@
 <body>
 
 <div id="screen-select">
-    <div class="setup-logo-container"><a href="https://pawa20240408.blogspot.com/" target="_blank"><img src="image/logo.png" alt="Logo"></a></div>
+    <div class="setup-logo-container">
+        <a href="https://pawa20240408.blogspot.com/" target="_blank"><img src="image/logo.png" alt="Logo"></a>
+    </div>
     <div class="order-selector">
         <div class="order-opt active" id="optFirst" onclick="sfx('tick'); setOrder('first')">先攻</div>
         <div class="order-opt" id="optSecond" onclick="sfx('tick'); setOrder('second')">後攻</div>
     </div>
     <div class="grid" id="leaderGrid"></div>
-    <div class="upload-section">
-        <label class="upload-btn-rect" onclick="sfx('click')"><span class="upload-text">自訂主戰者圖片檔</span><div class="file-indicator" id="imageIndicator"></div><input type="file" accept="image/*" style="display: none;" onchange="handleImageUpload(this)"></label>
-        <label class="upload-btn-rect" onclick="sfx('click')"><span class="upload-text">自訂主戰者音樂檔</span><div class="file-indicator" id="audioIndicator"></div><input type="file" accept="audio/*" style="display: none;" onchange="handleAudioUpload(this)"></label>
+    <div class="upload-wrapper">
+        <div class="upload-group-label">─── 我方主戰者自訂 ───</div>
+        <div class="upload-row">
+            <label class="upload-btn-rect" onclick="sfx('click')"><span class="upload-text">📷 圖片檔</span><div class="file-indicator" id="imageIndicator"></div><input type="file" accept="image/*" style="display: none;" onchange="handleImageUpload(this)"></label>
+            <label class="upload-btn-rect" onclick="sfx('click')"><span class="upload-text">🎵 音樂檔</span><div class="file-indicator" id="audioIndicator"></div><input type="file" accept="audio/*" style="display: none;" onchange="handleAudioUpload(this)"></label>
+        </div>
+        <div class="upload-group-label">─── 敵方主戰者自訂 ───</div>
+        <div class="upload-row">
+            <label class="upload-btn-rect" onclick="sfx('click')"><span class="upload-text">📷 圖片檔</span><div class="file-indicator" id="enemyImageIndicator"></div><input type="file" accept="image/*" style="display: none;" onchange="handleEnemyImageUpload(this)"></label>
+            <label class="upload-btn-rect" onclick="sfx('click')"><span class="upload-text">🎵 音樂檔</span><div class="file-indicator" id="enemyAudioIndicator"></div><input type="file" accept="audio/*" style="display: none;" onchange="handleEnemyAudioUpload(this)"></label>
+        </div>
     </div>
     <button class="btn start-btn" onclick="sfx('confirm'); startGame()">BATTLE START</button>
 </div>
@@ -121,6 +135,7 @@
             <button class="btn btn-manual" onclick="modMaxPP(1)">M+</button>
         </div>
         <button class="btn btn-turn-start" onclick="startTurn()">回合開始</button>
+        <div class="turn-display" id="turnLabelDisplay">TURN 0</div>
     </div>
 
     <div class="right-panel-hp">
@@ -141,8 +156,7 @@
             </div>
             <div class="leader-landscape-frame" id="playerFrame" onclick="playUserVoice()"><img id="myAvatar" src=""></div>
         </div>
-        <div class="section-footer">
-            <div class="class-counters" id="classCounters"></div>
+        <div class="section-footer"><div class="class-counters" id="classCounters"></div>
             <div class="footer-ep-sep-group">
                 <div class="sep-gem" id="sepGem" onclick="toggleSEPGem()"><span>SEP</span></div>
                 <div class="ep-container-horizontal" id="epBox">
@@ -158,6 +172,7 @@
     let uploadedAudio = new Audio();
     let hasUploadedAudio = false;
     let enemyVoice = new Audio('voice/enemy_click.mp3');
+    let hasUploadedEnemyAudio = false;
     let currentClassVoices = { start: null, click: null };
 
     function sfx(type) {
@@ -173,7 +188,7 @@
         else if (type === 'click') { osc.frequency.setValueAtTime(523, now); gainNode.gain.setValueAtTime(0.05, now); gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1); osc.start(now); osc.stop(now + 0.1); }
     }
 
-    let state = { playerHP: 20, enemyHP: 20, currentPP: 0, maxPP: 0, turn: 0, imgSrc: '', uploadedImgSrc: '', playerClass: 'elf', isFirstPlayer: true, combo: 0, cemetery: 0, spellboost: 0, necroCharge: 0, isCrimson: false, isImprisoned: false };
+    let state = { playerHP: 20, enemyHP: 20, currentPP: 0, maxPP: 0, turn: 0, imgSrc: '', uploadedImgSrc: '', enemyImgSrc: 'image/enemy_default.png', playerClass: 'elf', isFirstPlayer: true, combo: 0, cemetery: 0, spellboost: 0, necroCharge: 0, isCrimson: false, isImprisoned: false };
 
     const leaders = [
         { id: 'elf', name: '精靈', img: 'image/elf.png', vStart: 'voice/elf_start.mp3', vClick: 'voice/elf_click.mp3' }, 
@@ -208,9 +223,15 @@
         sfx('confirm');
     }
 
+    function handleImageUpload(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { state.uploadedImgSrc = e.target.result; state.imgSrc = e.target.result; document.getElementById('imageIndicator').style.width = "100%"; sfx('confirm'); }; reader.readAsDataURL(input.files[0]); } }
+    function handleAudioUpload(input) { if (input.files && input.files[0]) { uploadedAudio.src = URL.createObjectURL(input.files[0]); uploadedAudio.load(); hasUploadedAudio = true; document.getElementById('audioIndicator').style.width = "100%"; sfx('confirm'); } }
+    function handleEnemyImageUpload(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { state.enemyImgSrc = e.target.result; document.getElementById('enemyAvatar').src = e.target.result; document.getElementById('enemyImageIndicator').style.width = "100%"; sfx('confirm'); }; reader.readAsDataURL(input.files[0]); } }
+    function handleEnemyAudioUpload(input) { if (input.files && input.files[0]) { enemyVoice.src = URL.createObjectURL(input.files[0]); enemyVoice.load(); hasUploadedEnemyAudio = true; document.getElementById('enemyAudioIndicator').style.width = "100%"; sfx('confirm'); } }
+
     function startGame() {
         if (!state.imgSrc) { alert("請選擇職業"); return; }
         document.getElementById('myAvatar').src = state.imgSrc;
+        document.getElementById('enemyAvatar').src = state.enemyImgSrc;
         document.getElementById('screen-select').style.display = 'none';
         document.getElementById('screen-battle').style.display = 'flex';
         initGauge(); renderClassUI(); updateEPUi();
@@ -224,7 +245,11 @@
         sfx(state.isImprisoned ? 'confirm' : 'tick');
     }
     function toggleSEPGem() { document.getElementById('sepGem').classList.toggle('active'); sfx('confirm'); }
-    function checkSEPAutoLight() { const sep = document.getElementById('sepGem'); const threshold = state.isFirstPlayer ? 7 : 6; if (state.maxPP >= threshold) { sep.classList.add('active'); } }
+    function checkSEPAutoLight() {
+        const sep = document.getElementById('sepGem');
+        const thresholdTurn = state.isFirstPlayer ? 7 : 6;
+        if (state.turn >= thresholdTurn) { sep.classList.add('active'); }
+    }
     function toggleEP(el) { el.classList.toggle('active'); sfx('tick'); }
     function playUserVoice() { if (hasUploadedAudio) { uploadedAudio.currentTime = 0; uploadedAudio.play(); } else if (currentClassVoices.click) { currentClassVoices.click.currentTime = 0; currentClassVoices.click.play().catch(()=>{}); } }
     function playEnemyVoice() { enemyVoice.currentTime = 0; enemyVoice.play().catch(()=>{}); }
@@ -232,7 +257,8 @@
     function initGauge() { const layer = document.getElementById('ppGemsLayer'); layer.innerHTML = ''; for (let i = 10; i >= 1; i--) { let gem = document.createElement('div'); gem.className = 'pp-gem'; gem.innerText = i; gem.dataset.index = i; gem.onclick = () => { sfx('click'); togglePP(i); }; layer.appendChild(gem); } renderPP(); }
     function togglePP(idx) { state.currentPP = (state.currentPP >= idx) ? idx - 1 : idx; renderPP(); }
     function modPP(val) { state.currentPP = Math.max(0, Math.min(state.maxPP, state.currentPP + val)); renderPP(); sfx('tick'); }
-    function modMaxPP(val) { state.maxPP = Math.max(0, Math.min(10, state.maxPP + val)); if(state.currentPP > state.maxPP) state.currentPP = state.maxPP; renderPP(); checkSEPAutoLight(); sfx('tick'); }
+    function modMaxPP(val) { state.maxPP = Math.max(0, Math.min(10, state.maxPP + val)); if(state.currentPP > state.maxPP) state.currentPP = state.maxPP; renderPP(); sfx('tick'); }
+    
     function renderPP() {
         document.getElementById('currentPP').innerText = state.currentPP; document.getElementById('maxPP').innerText = state.maxPP;
         const isAwakened = (state.playerClass === 'drag' && state.maxPP >= 7);
@@ -245,12 +271,22 @@
             else { gem.style.display = 'none'; }
         });
     }
-    function startTurn() { state.turn++; if (state.maxPP < 10) state.maxPP++; state.currentPP = state.maxPP; if (state.playerClass === 'elf') state.combo = 0; if (state.playerClass === 'nightmare') state.isCrimson = false; checkSEPAutoLight(); renderPP(); renderClassUI(); sfx('powerup'); }
+
+    function startTurn() { 
+        state.turn++; 
+        document.getElementById('turnLabelDisplay').innerText = "TURN " + state.turn; // 更新回合顯示
+        if (state.maxPP < 10) state.maxPP++; 
+        state.currentPP = state.maxPP; 
+        if (state.playerClass === 'elf') state.combo = 0; 
+        if (state.playerClass === 'nightmare') state.isCrimson = false; 
+        checkSEPAutoLight(); renderPP(); renderClassUI(); sfx('powerup'); 
+    }
+
     function updateEPUi() { const eps = document.getElementById('epBox').children; const count = state.isFirstPlayer ? 0 : 3; for(let i=0; i<3; i++) { eps[i].className = (i < count) ? 'ep-gem active' : 'ep-gem'; } }
     function modHP(who, val) { state[who+'HP'] += val; document.getElementById(who+'HP').innerText = state[who+'HP']; sfx('tick'); }
     function renderClassUI() {
         const container = document.getElementById('classCounters'); container.innerHTML = '';
-        const addC = (lbl, key) => { let div = document.createElement('div'); div.className='counter-box'; div.innerHTML = `<div class="counter-label">${lbl}</div><div style="display:flex;align-items:center;gap:3px"><button class="btn-tiny" onclick="modCounter('${key}',-1)">-</button><span class="counter-val" id="v-${key}">${state[key]}</span><button class="btn-tiny" onclick="modCounter('${key}',1)">+</button></div>`; container.appendChild(div); };
+        const addC = (lbl, key) => { let div = document.createElement('div'); div.className='counter-box'; div.innerHTML = `<div class="counter-label">${lbl}</div><div style="display:flex;align-items:center;gap:3px"><button class="btn btn-tiny" onclick="modCounter('${key}',-1)">-</button><span class="counter-val" id="v-${key}">${state[key]}</span><button class="btn btn-tiny" onclick="modCounter('${key}',1)">+</button></div>`; container.appendChild(div); };
         const addT = (lbl, key) => { let div = document.createElement('div'); div.className='counter-box'; div.innerHTML = `<div class="counter-label">${lbl}</div><button class="btn-toggle-mini ${state[key]?'on':''}" onclick="togState('${key}')">${state[key]?'ON':'OFF'}</button>`; container.appendChild(div); };
         if(state.playerClass==='elf') addC('連擊','combo');
         if(['royal','witch','nightmare'].includes(state.playerClass)) addC('墓場','cemetery');
@@ -263,8 +299,6 @@
     function rotateEnemy() { isRotated = !isRotated; document.getElementById('enemySection').style.transform = isRotated ? "rotate(180deg)" : "none"; }
     let isRotated = false;
     function resetGame() { if(confirm("確定重置？")) location.reload(); }
-    function handleImageUpload(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { state.uploadedImgSrc = e.target.result; state.imgSrc = e.target.result; document.getElementById('imageIndicator').style.width = "100%"; sfx('confirm'); }; reader.readAsDataURL(input.files[0]); } }
-    function handleAudioUpload(input) { if (input.files && input.files[0]) { uploadedAudio.src = URL.createObjectURL(input.files[0]); uploadedAudio.load(); hasUploadedAudio = true; document.getElementById('audioIndicator').style.width = "100%"; sfx('confirm'); } }
 </script>
 </body>
 </html>
